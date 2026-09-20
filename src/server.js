@@ -252,3 +252,5 @@ const server = app.listen(PORT, () => {
   // Auto initialize WhatsApp manager
   initWhatsApp();
 });
+
+export default app;
