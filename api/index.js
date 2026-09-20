@@ -146,6 +146,32 @@ app.get('/api/whatsapp/status', (req, res) => {
   });
 });
 
+// Helper: Kirim pesan balasan via Fonnte API
+async function sendFonnte(target, replyText) {
+  const token = process.env.FONNTE_TOKEN || 'BfMDrng3jS2CkudCyhW9';
+  if (!target || !replyText) return null;
+  try {
+    const cleanTarget = String(target).replace(/[^0-9]/g, '');
+    const res = await fetch('https://api.fonnte.com/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        target: cleanTarget,
+        message: replyText
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    console.log(`[Fonnte Auto-Reply to ${cleanTarget}]:`, data);
+    return data;
+  } catch (err) {
+    console.error(`[Fonnte Auto-Reply Error to ${target}]:`, err.message);
+    return null;
+  }
+}
+
 // Webhook GET & POST
 app.get('/api/webhook/whatsapp', (req, res) => {
   res.status(200).json({ status: 'Webhook is active and ready!', method: 'GET' });
@@ -153,14 +179,28 @@ app.get('/api/webhook/whatsapp', (req, res) => {
 
 app.post('/api/webhook/whatsapp', async (req, res) => {
   try {
-    const message = req.body.message || req.body.text || req.body.body || req.body.caption || req.body.msg || '';
-    const sender = req.body.sender || req.body.number || req.body.from || req.body.phone || '';
-
+    // Fonnte payload: { message: "beli baso 15rb", pesan: "beli baso 15rb", sender: "628...", pengirim: "628..." }
+    let message = req.body.message || req.body.pesan || '';
+    if (!message && req.body.text && req.body.text !== 'non-button message') {
+      message = req.body.text;
+    }
     if (!message) {
-      return res.json({ reply: 'Pesan tidak ditemukan', message: 'Pesan tidak ditemukan' });
+      message = req.body.body || req.body.caption || req.body.msg || '';
     }
 
-    const result = processWhatsAppMessage(message);
+    const sender = req.body.sender || req.body.number || req.body.pengirim || req.body.from || req.body.phone || '';
+
+    if (!message || message.trim().length === 0) {
+      return res.json({ reply: 'Pesan tidak ditemukan' });
+    }
+
+    console.log(`[Webhook Incoming] from ${sender}: "${message}"`);
+    const result = processWhatsAppMessage(message.trim());
+
+    // Send WhatsApp Reply via Fonnte API
+    if (sender && result.reply) {
+      await sendFonnte(sender, result.reply);
+    }
 
     // Return format for Fonnte
     res.json({
@@ -170,6 +210,7 @@ app.post('/api/webhook/whatsapp', async (req, res) => {
       success: true
     });
   } catch (err) {
+    console.error('[Webhook Error]:', err);
     res.status(500).json({ reply: 'Terjadi kesalahan sistem' });
   }
 });
