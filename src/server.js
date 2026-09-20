@@ -234,6 +234,11 @@ async function sendWhatsAppViaGateway(number, text) {
   }
 }
 
+// Webhook GET verification (wajib untuk verifikasi Fonnte & provider lain)
+app.get('/api/webhook/whatsapp', (req, res) => {
+  res.status(200).json({ status: 'Webhook is active and ready!', method: 'GET' });
+});
+
 // Generic WhatsApp Webhook for external providers & personal WA Server
 app.post('/api/webhook/whatsapp', async (req, res) => {
   try {
@@ -266,10 +271,11 @@ app.post('/api/webhook/whatsapp', async (req, res) => {
       await sendWhatsAppViaGateway(sender, result.reply);
     }
 
-    // Return response in format useful for webhook auto-reply
+    // Return response in format useful for Fonnte & webhook auto-reply
     res.json({
-      success: true,
       reply: result.reply,
+      message: result.reply,
+      success: true,
       status: result.status
     });
   } catch (err) {
