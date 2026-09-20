@@ -10,6 +10,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Ensure latest synchronized data from cloud across all serverless containers
+app.use(async (req, res, next) => {
+  try {
+    await db.syncFromCloud();
+  } catch (e) {}
+  next();
+});
+
 // SSE placeholder for Vercel (serverless doesn't support long-running SSE)
 router.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');

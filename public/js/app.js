@@ -1051,4 +1051,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Periodic WA status poll
   setInterval(checkWhatsAppStatus, 8000);
+
+  // Auto poll for transactions & summary so WhatsApp messages sync in real-time
+  setInterval(() => {
+    loadSummary();
+    loadTransactions();
+  }, 4000);
 });

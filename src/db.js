@@ -45,13 +45,65 @@ function getInitialData() {
   };
 }
 
+const CLOUD_STORE_URL = 'https://api.restful-api.dev/objects/ff808181a09d98f701a0c33804825e4e';
+let lastSyncTime = 0;
+
 let cachedData = null;
+
+export async function syncFromCloud() {
+  const now = Date.now();
+  if (now - lastSyncTime < 2000 && cachedData) return cachedData;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const res = await fetch(CLOUD_STORE_URL, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.data && Array.isArray(json.data.transactions)) {
+        const local = loadData();
+        local.transactions = json.data.transactions;
+        if (json.data.settings) {
+          local.settings = { ...local.settings, ...json.data.settings };
+        }
+        saveData(local, false);
+        lastSyncTime = now;
+        return local;
+      }
+    }
+  } catch (err) {
+    // offline or timeout, proceed with local data
+  }
+  return loadData();
+}
+
+export async function pushToCloud(data) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    await fetch(CLOUD_STORE_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'catatduit_japuy_db',
+        data: {
+          transactions: data.transactions || [],
+          settings: data.settings || {}
+        }
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+  } catch (err) {
+    console.warn('[DB] pushToCloud warning:', err.message);
+  }
+}
 
 function loadData() {
   if (cachedData) return cachedData;
   if (!fs.existsSync(DB_FILE)) {
     const init = getInitialData();
-    saveData(init);
+    saveData(init, false);
     cachedData = init;
     return cachedData;
   }
@@ -65,13 +117,13 @@ function loadData() {
   } catch (err) {
     console.error('Error reading DB, re-initializing:', err);
     const init = getInitialData();
-    saveData(init);
+    saveData(init, false);
     cachedData = init;
     return cachedData;
   }
 }
 
-function saveData(data) {
+function saveData(data, shouldPush = true) {
   cachedData = data;
   try {
     if (!fs.existsSync(DATA_DIR)) {
@@ -83,9 +135,14 @@ function saveData(data) {
   } catch (err) {
     console.warn('[DB] saveData warning (fallback to memory):', err.message);
   }
+  if (shouldPush) {
+    pushToCloud(data).catch(() => {});
+  }
 }
 
 export const db = {
+  syncFromCloud,
+  pushToCloud,
   getTransactions(filter = {}) {
     const data = loadData();
     let list = [...data.transactions];

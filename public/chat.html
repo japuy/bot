@@ -570,7 +570,74 @@
       }
     }
 
-    // Append Message Bubble
+    // Rendered transaction tracker to prevent duplicate bubbles
+    const renderedTxIds = new Set();
+
+    function formatTime(isoString) {
+      if (!isoString) return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const d = new Date(isoString);
+      return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function appendTransactionBubbles(tx, shouldPlayChime = false) {
+      if (renderedTxIds.has(tx.id)) return;
+      renderedTxIds.add(tx.id);
+
+      const timeStr = formatTime(tx.created_at);
+      const isIncome = tx.type === 'income';
+      const sourceBadge = tx.source === 'whatsapp' 
+        ? '<span style="background:rgba(37,211,102,0.25);color:#25d366;font-size:0.65rem;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;">via WA</span>' 
+        : '<span style="background:rgba(59,130,246,0.25);color:#60a5fa;font-size:0.65rem;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;">via Web</span>';
+
+      // 1. User message bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'bubble user-bubble';
+      userBubble.innerHTML = `
+        <div class="bubble-content">${tx.raw_message || tx.description} ${sourceBadge}</div>
+        <span class="bubble-time">${timeStr}</span>
+      `;
+      chatContainer.insertBefore(userBubble, typingIndicator);
+
+      // 2. Bot reply bubble
+      const botBubble = document.createElement('div');
+      botBubble.className = 'bubble bot-bubble';
+      botBubble.innerHTML = `
+        <div class="bubble-content">
+          ✅ <strong>CATATAN DISIMPAN!</strong><br>
+          ━━━━━━━━━━━━━━━━━━━<br>
+          📌 <strong>Jenis</strong>: ${isIncome ? '🟢 Pemasukan' : '🔴 Pengeluaran'}<br>
+          💵 <strong>Nominal</strong>: <strong>${formatRupiah(tx.amount)}</strong><br>
+          📝 <strong>Ket</strong>: ${tx.description}<br>
+          📁 <strong>Kategori</strong>: ${tx.category || '-'}<br>
+        </div>
+        <span class="bubble-time">${timeStr}</span>
+      `;
+      chatContainer.insertBefore(botBubble, typingIndicator);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      if (shouldPlayChime) {
+        playBotChime();
+      }
+    }
+
+    async function syncTransactions(isInitial = false) {
+      try {
+        const res = await fetch('/api/transactions?limit=50');
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          // Sort chronological (oldest to newest)
+          const chronological = [...json.data].reverse();
+          chronological.forEach(tx => {
+            appendTransactionBubbles(tx, !isInitial);
+          });
+        }
+        await updateBalance();
+      } catch (e) {
+        console.warn('Sync transactions error:', e);
+      }
+    }
+
+    // Append generic chat message
     function appendMessage(text, isBot = false) {
       const bubble = document.createElement('div');
       bubble.className = `bubble ${isBot ? 'bot-bubble' : 'user-bubble'}`;
@@ -586,7 +653,6 @@
         <span class="bubble-time">${now}</span>
       `;
 
-      // Insert before typing indicator
       chatContainer.insertBefore(bubble, typingIndicator);
       chatContainer.scrollTop = chatContainer.scrollHeight;
 
@@ -622,8 +688,12 @@
           } else {
             appendMessage('⚠️ Catatan berhasil disimpan ke database.', true);
           }
+          if (json.data && json.data.id) {
+            renderedTxIds.add(json.data.id);
+          }
           updateBalance();
-        }, 350);
+          syncTransactions(false);
+        }, 300);
 
       } catch (err) {
         typingIndicator.classList.remove('active');
@@ -701,10 +771,21 @@
     // Init
     document.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
-      updateBalance();
       const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       const wt = document.getElementById('welcomeTime');
       if (wt) wt.textContent = now;
+
+      // Initial sync with cloud & transactions history
+      syncTransactions(true);
+
+      // Auto poll every 3 seconds to keep WhatsApp & Web chats 100% in sync
+      setInterval(() => {
+        syncTransactions(false);
+      }, 3000);
+
+      window.addEventListener('focus', () => {
+        syncTransactions(false);
+      });
     });
   </script>
 </body>
