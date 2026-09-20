@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# WhatsApp multi-device authentication & session tokens
+data/auth_info_baileys/
+
+# Temporary files
+data/*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local

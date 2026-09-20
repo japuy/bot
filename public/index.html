@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CatatDuit - Web Keuangan Otomatis via WhatsApp</title>
+  <meta name="description" content="Aplikasi pencatatan keuangan pribadi cerdas terintegrasi WhatsApp dengan parser pesan otomatis, analitik realtime, dan grafik pengeluaran.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dark-theme">
+  <div class="app-layout">
+    
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <div class="nav-left">
+        <div class="brand-logo">
+          <div class="logo-icon">
+            <i data-lucide="wallet-cards"></i>
+          </div>
+          <div class="logo-text">
+            <span class="brand-title">Catat<span class="highlight">Duit</span></span>
+            <span class="brand-badge">WA Sync</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-center">
+        <div class="current-date-chip">
+          <i data-lucide="calendar"></i>
+          <span id="currentDateDisplay">Memuat tanggal...</span>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <!-- WA Connection Live Status Pill -->
+        <div class="wa-status-pill" id="waNavPill" title="Status Koneksi WhatsApp">
+          <span class="pulse-indicator" id="waPulseDot"></span>
+          <i data-lucide="message-square" class="wa-icon"></i>
+          <span id="waNavStatusText">Menghubungkan WA...</span>
+        </div>
+
+        <button class="btn btn-secondary" id="btnOpenBudgetModal" title="Atur Budget Bulanan">
+          <i data-lucide="target"></i>
+          <span>Budget</span>
+        </button>
+
+        <button class="btn btn-primary" id="btnOpenAddModal">
+          <i data-lucide="plus-circle"></i>
+          <span>Tambah Manual</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-container">
+      
+      <!-- Top Notification Banner for New Transactions -->
+      <div id="liveAlertBanner" class="live-alert-banner hidden">
+        <div class="alert-content">
+          <div class="alert-icon-wrap" id="alertIconWrap">
+            <i data-lucide="sparkles"></i>
+          </div>
+          <div class="alert-text">
+            <span class="alert-title" id="alertTitle">Transaksi Baru Masuk!</span>
+            <span class="alert-desc" id="alertDesc">Detail transaksi</span>
+          </div>
+        </div>
+        <button class="btn-close-alert" id="btnCloseAlert">&times;</button>
+      </div>
+
+      <!-- Overview Metric Cards -->
+      <section class="metrics-grid">
+        <!-- Card 1: Total Saldo -->
+        <div class="metric-card balance-card">
+          <div class="card-glass-glow"></div>
+          <div class="metric-header">
+            <span class="metric-label">Total Saldo Terkini</span>
+            <button class="btn-icon-subtle" id="toggleBalanceVisibility" title="Sembunyikan/Tampilkan Saldo">
+              <i data-lucide="eye" id="eyeIcon"></i>
+            </button>
+          </div>
+          <div class="metric-value-wrap">
+            <h1 class="metric-value" id="totalBalanceVal">Rp 0</h1>
+          </div>
+          <div class="metric-footer">
+            <span class="badge badge-subtle" id="balanceStatusBadge">
+              <i data-lucide="shield-check"></i> Kondisi Finansial Aman
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 2: Pemasukan Bulan Ini -->
+        <div class="metric-card income-card">
+          <div class="metric-header">
+            <span class="metric-label">Pemasukan Bulan Ini</span>
+            <div class="metric-icon-bubble income-bubble">
+              <i data-lucide="arrow-down-left"></i>
+            </div>
+          </div>
+          <div class="metric-value-wrap">
+            <h2 class="metric-value text-emerald" id="monthIncomeVal">Rp 0</h2>
+          </div>
+          <div class="metric-footer">
+            <span class="subtext">Hari ini: <strong id="todayIncomeVal">Rp 0</strong></span>
+          </div>
+        </div>
+
+        <!-- Card 3: Pengeluaran Bulan Ini -->
+        <div class="metric-card expense-card">
+          <div class="metric-header">
+            <span class="metric-label">Pengeluaran Bulan Ini</span>
+            <div class="metric-icon-bubble expense-bubble">
+              <i data-lucide="arrow-up-right"></i>
+            </div>
+          </div>
+          <div class="metric-value-wrap">
+            <h2 class="metric-value text-rose" id="monthExpenseVal">Rp 0</h2>
+          </div>
+          <div class="metric-footer">
+            <span class="subtext">Hari ini: <strong id="todayExpenseVal">Rp 0</strong></span>
+          </div>
+        </div>
+
+        <!-- Card 4: Tabungan & Budget -->
+        <div class="metric-card budget-card">
+          <div class="metric-header">
+            <span class="metric-label">Batas Anggaran Bulanan</span>
+            <span class="badge badge-info" id="budgetPercentageBadge">0% Terpakai</span>
+          </div>
+          <div class="metric-value-wrap">
+            <h2 class="metric-value" id="budgetLimitVal">Rp 0</h2>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="budgetProgressBar" style="width: 0%"></div>
+          </div>
+          <div class="metric-footer">
+            <span class="subtext" id="budgetRemainingText">Sisa kuota belanja: Rp 0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Two-Column Layout -->
+      <div class="content-split-layout">
+        
+        <!-- Left Column: Analytics & Transactions Table -->
+        <div class="primary-column">
+          
+          <!-- Charts Section -->
+          <section class="charts-row">
+            <!-- Chart 1: Tren Harian -->
+            <div class="panel-card chart-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <i data-lucide="trending-up" class="panel-icon text-indigo"></i>
+                  <div>
+                    <h2 class="panel-title">Tren Arus Kas Harian</h2>
+                    <p class="panel-subtitle">Perbandingan pemasukan vs pengeluaran bulan ini</p>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="dailyTrendChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Kategori Donut -->
+            <div class="panel-card chart-panel chart-donut-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <i data-lucide="pie-chart" class="panel-icon text-amber"></i>
+                  <div>
+                    <h2 class="panel-title">Kategori Pengeluaran</h2>
+                    <p class="panel-subtitle">Alokasi belanja bulan ini</p>
+                  </div>
+                </div>
+              </div>
+              <div class="donut-content-layout">
+                <div class="donut-chart-box">
+                  <canvas id="categoryDonutChart"></canvas>
+                </div>
+                <div class="category-legend-list" id="categoryLegendList">
+                  <!-- Dynamic Categories List -->
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Transactions Manager Section -->
+          <section class="panel-card transactions-panel">
+            <div class="panel-header flex-between">
+              <div class="panel-title-wrap">
+                <i data-lucide="receipt" class="panel-icon text-emerald"></i>
+                <div>
+                  <h2 class="panel-title">Riwayat Transaksi</h2>
+                  <p class="panel-subtitle">Catatan keuangan otomatis dari WhatsApp & manual</p>
+                </div>
+              </div>
+
+              <div class="panel-actions">
+                <button class="btn btn-outline btn-sm" id="btnExportCSV">
+                  <i data-lucide="download"></i>
+                  <span>Ekspor CSV</span>
+                </button>
+                <button class="btn btn-outline btn-sm" id="btnRefreshTx">
+                  <i data-lucide="refresh-cw"></i>
+                  <span>Refresh</span>
+                </button>
+                <button class="btn btn-outline btn-danger btn-sm" id="btnClearAllTx" title="Hapus semua transaksi dan mulai dari awal">
+                  <i data-lucide="trash-2"></i>
+                  <span>Reset Data</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="filters-bar">
+              <div class="search-input-wrap">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="txSearchInput" placeholder="Cari transaksi (contoh: baso, bensin, gaji)...">
+              </div>
+
+              <div class="filter-controls">
+                <div class="type-filter-group">
+                  <button class="type-pill active" data-type="all">Semua</button>
+                  <button class="type-pill" data-type="expense">Pengeluaran</button>
+                  <button class="type-pill" data-type="income">Pemasukan</button>
+                </div>
+
+                <select id="categoryFilterSelect" class="styled-select">
+                  <option value="all">Semua Kategori</option>
+                </select>
+
+                <input type="date" id="dateFilterInput" class="styled-date-input" title="Filter Tanggal">
+              </div>
+            </div>
+
+            <!-- Transactions List / Table -->
+            <div class="table-container">
+              <table class="styled-table" id="transactionsTable">
+                <thead>
+                  <tr>
+                    <th>Deskripsi & Pesan Asli</th>
+                    <th>Kategori</th>
+                    <th>Waktu & Sumber</th>
+                    <th class="text-right">Nominal</th>
+                    <th class="text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="transactionsTableBody">
+                  <!-- Populated by JS -->
+                  <tr>
+                    <td colspan="5" class="empty-state-cell">
+                      <div class="loading-spinner"></div>
+                      <p>Memuat transaksi...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="pagination-footer">
+              <span class="pagination-info" id="paginationInfo">Menampilkan 0 transaksi</span>
+              <div class="pagination-btns">
+                <button class="btn btn-sm btn-outline" id="btnPrevPage" disabled>Sebelumnya</button>
+                <button class="btn btn-sm btn-outline" id="btnNextPage" disabled>Selanjutnya</button>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Right Column: WhatsApp Gateway, Live Chat Simulator, & Instructions -->
+        <div class="sidebar-column">
+          
+          <div class="panel-card wa-hub-panel">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <div class="wa-hub-logo">
+                  <i data-lucide="message-circle" class="text-wa"></i>
+                </div>
+                <div>
+                  <h2 class="panel-title">WhatsApp Gateway Hub</h2>
+                  <p class="panel-subtitle">Catat otomatis langsung dari chat WA</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hub Tabs Navigation -->
+            <div class="hub-tabs">
+              <button class="hub-tab active" data-target="tab-simulator">
+                <i data-lucide="smartphone"></i>
+                <span>Simulator WA</span>
+              </button>
+              <button class="hub-tab" data-target="tab-qrcode">
+                <i data-lucide="qr-code"></i>
+                <span>Scan QR WA</span>
+              </button>
+              <button class="hub-tab" data-target="tab-webhook">
+                <i data-lucide="webhook"></i>
+                <span>Webhook API</span>
+              </button>
+            </div>
+
+            <!-- TAB 1: WhatsApp Interactive Simulator -->
+            <div class="tab-pane active" id="tab-simulator">
+              <div class="simulator-wrapper">
+                <div class="phone-mockup">
+                  <!-- Phone Top Bar -->
+                  <div class="phone-status-header">
+                    <div class="phone-contact">
+                      <div class="contact-avatar">
+                        <i data-lucide="bot"></i>
+                      </div>
+                      <div class="contact-meta">
+                        <span class="contact-name">CatatDuit Bot</span>
+                        <span class="contact-status"><span class="online-indicator"></span> Online</span>
+                      </div>
+                    </div>
+                    <div class="phone-actions">
+                      <i data-lucide="phone" class="phone-top-icon"></i>
+                      <i data-lucide="more-vertical" class="phone-top-icon"></i>
+                    </div>
+                  </div>
+
+                  <!-- Phone Chat Messages Body -->
+                  <div class="chat-messages-body" id="simulatorChatBody">
+                    <div class="chat-date-divider">Hari ini</div>
+
+                    <div class="chat-bubble bot-bubble">
+                      <div class="bubble-text">
+                        Halo! 👋 Kirim catatan pengeluaran atau pemasukan Anda di sini atau lewat WhatsApp.<br><br>
+                        Contoh: <strong>"beli baso 15rb"</strong>, <strong>"beli maso 15000"</strong>, atau <strong>"gaji 5jt"</strong>.
+                      </div>
+                      <span class="bubble-time">Sekarang</span>
+                    </div>
+                  </div>
+
+                  <!-- Quick Action Chips -->
+                  <div class="quick-chips-bar">
+                    <span class="quick-chip" data-msg="beli baso 15rb">🍜 beli baso 15rb</span>
+                    <span class="quick-chip" data-msg="beli maso 15000">🍲 beli maso 15000</span>
+                    <span class="quick-chip" data-msg="bayar listrik 150k">⚡ bayar listrik 150k</span>
+                    <span class="quick-chip" data-msg="gaji 5jt">💼 gaji 5jt</span>
+                    <span class="quick-chip" data-msg="saldo">📊 saldo</span>
+                    <span class="quick-chip" data-msg="laporan">📑 laporan</span>
+                    <span class="quick-chip" data-msg="batal">↩️ batal</span>
+                  </div>
+
+                  <!-- Simulator Chat Input Form -->
+                  <form class="chat-input-bar" id="simulatorForm">
+                    <input type="text" id="simulatorInput" placeholder="Ketik pesan (cth: beli baso 15rb)..." autocomplete="off">
+                    <button type="submit" class="btn-send-chat" id="btnSendChat" title="Kirim Pesan">
+                      <i data-lucide="send"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: Scan QR Code for Real WhatsApp Connection -->
+            <div class="tab-pane" id="tab-qrcode">
+              <div class="qr-connection-container">
+                <div class="qr-status-box" id="qrStatusBox">
+                  <div class="qr-state-indicator" id="qrStateIndicator">
+                    <span class="badge" id="qrBadgeState">Menunggu QR...</span>
+                  </div>
+
+                  <div class="qr-code-frame" id="qrCodeFrame">
+                    <div class="qr-loading-spinner" id="qrLoading">
+                      <div class="spinner"></div>
+                      <p id="qrLoadingText">Menghubungkan ke WhatsApp Server...</p>
+                    </div>
+                    <img id="qrCodeImage" src="" alt="WhatsApp QR Code" class="hidden">
+                  </div>
+
+                  <div class="wa-account-info hidden" id="waAccountInfo">
+                    <div class="account-card">
+                      <div class="account-avatar">
+                        <i data-lucide="check-circle-2" class="text-emerald"></i>
+                      </div>
+                      <div>
+                        <h4 id="waConnectedName">WhatsApp Terhubung</h4>
+                        <p id="waConnectedPhone">+62 812-xxxx-xxxx</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="qr-actions">
+                    <button class="btn btn-primary btn-full" id="btnConnectWA">
+                      <i data-lucide="refresh-cw"></i>
+                      <span>Muat Ulang / Hubungkan</span>
+                    </button>
+                    <button class="btn btn-outline btn-danger btn-full hidden" id="btnDisconnectWA">
+                      <i data-lucide="log-out"></i>
+                      <span>Putuskan Sambungan</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Tutorial Steps -->
+                <div class="qr-steps-list">
+                  <h4><i data-lucide="help-circle"></i> Cara Menghubungkan WhatsApp Anda:</h4>
+                  <ol>
+                    <li>Buka aplikasi <strong>WhatsApp</strong> di handphone Anda.</li>
+                    <li>Ketuk menu <strong>Titik Tiga</strong> (Android) atau <strong>Pengaturan</strong> (iPhone).</li>
+                    <li>Pilih menu <strong>Perangkat Tertaut (Linked Devices)</strong>.</li>
+                    <li>Arahkan kamera ke <strong>QR Code</strong> di atas.</li>
+                    <li>Selesai! Anda bisa langsung mengirim pesan pengeluaran/pemasukan ke nomor bot atau nomor Anda sendiri.</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: Webhook API for Third Party Gateways -->
+            <div class="tab-pane" id="tab-webhook">
+              <div class="webhook-info-box">
+                <h4>Integrasi Gateway Alternatif</h4>
+                <p>Jika Anda menggunakan gateway pihak ketiga seperti <strong>Fonnte, Twilio, UltraMsg, atau WAHA</strong>, arahkan webhook URL ke alamat berikut:</p>
+                
+                <div class="copy-url-group">
+                  <input type="text" id="webhookUrlInput" readonly value="http://localhost:3000/api/webhook/whatsapp">
+                  <button class="btn btn-outline btn-sm" id="btnCopyWebhook">
+                    <i data-lucide="copy"></i> Salin
+                  </button>
+                </div>
+
+                <div class="webhook-sample">
+                  <span class="sample-title">Format Payload JSON yang Diterima:</span>
+                  <pre><code>{
+  "message": "beli baso 15rb",
+  "sender": "628123456789"
+}</code></pre>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Quick Guide / Tips Card -->
+          <div class="panel-card guide-card">
+            <div class="guide-header">
+              <i data-lucide="lightbulb" class="text-amber"></i>
+              <h3>Format Pesan WhatsApp Cerdas</h3>
+            </div>
+            <ul class="guide-tips">
+              <li><strong>Pengeluaran Makanan</strong>: <code>beli baso 15rb</code>, <code>beli maso 15000</code>, <code>nasi padang 25k</code></li>
+              <li><strong>Transportasi</strong>: <code>bensin pertamax 50rb</code>, <code>ojol gojek 18rb</code></li>
+              <li><strong>Tagihan</strong>: <code>bayar listrik pln 150.000</code>, <code>pulsa 25rb</code></li>
+              <li><strong>Pemasukan</strong>: <code>gaji bulanan 5jt</code>, <code>dapat transfer 300rb</code></li>
+              <li><strong>Perintah Bot</strong>: <code>saldo</code>, <code>laporan</code>, <code>batal</code> (undo)</li>
+            </ul>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Modal: Tambah Transaksi Manual -->
+    <div class="modal-overlay hidden" id="modalAddTransaction">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i data-lucide="plus-circle" class="text-emerald"></i>
+            <h3 id="modalTitle">Tambah Transaksi Manual</h3>
+          </div>
+          <button class="btn-close-modal" id="btnCloseAddModal">&times;</button>
+        </div>
+        
+        <form id="formAddTransaction" class="modal-form">
+          <input type="hidden" id="editTxId" value="">
+
+          <div class="form-group">
+            <label>Jenis Transaksi</label>
+            <div class="type-toggle-selector">
+              <label class="toggle-option">
+                <input type="radio" name="txType" value="expense" checked>
+                <span class="toggle-label expense-label">
+                  <i data-lucide="arrow-up-right"></i> Pengeluaran
+                </span>
+              </label>
+              <label class="toggle-option">
+                <input type="radio" name="txType" value="income">
+                <span class="toggle-label income-label">
+                  <i data-lucide="arrow-down-left"></i> Pemasukan
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="txAmount">Nominal (Rupiah)</label>
+            <div class="input-with-prefix">
+              <span class="input-prefix">Rp</span>
+              <input type="number" id="txAmount" required placeholder="15000" min="100">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="txDescription">Keterangan / Catatan</label>
+            <input type="text" id="txDescription" required placeholder="Contoh: Beli Baso / Gaji Proyek">
+          </div>
+
+          <div class="form-group">
+            <label for="txCategory">Kategori</label>
+            <select id="txCategory" required class="styled-select">
+              <!-- Dynamically loaded -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="txDate">Tanggal & Waktu</label>
+            <input type="datetime-local" id="txDate" class="styled-date-input">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btnCancelAdd">Batal</button>
+            <button type="submit" class="btn btn-primary" id="btnSubmitAdd">Simpan Transaksi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Atur Target Anggaran (Budget) -->
+    <div class="modal-overlay hidden" id="modalBudget">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i data-lucide="target" class="text-indigo"></i>
+            <h3>Atur Batas Anggaran Bulanan</h3>
+          </div>
+          <button class="btn-close-modal" id="btnCloseBudgetModal">&times;</button>
+        </div>
+
+        <form id="formBudget" class="modal-form">
+          <p class="modal-note">Tentukan target batas maksimal pengeluaran Anda per bulan agar keuangan tetap terencana dan terkontrol.</p>
+          
+          <div class="form-group">
+            <label for="inputBudgetLimit">Target Budget Bulanan</label>
+            <div class="input-with-prefix">
+              <span class="input-prefix">Rp</span>
+              <input type="number" id="inputBudgetLimit" required min="100000" step="50000" placeholder="3000000">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btnCancelBudget">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Budget</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
