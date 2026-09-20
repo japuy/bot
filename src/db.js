@@ -52,7 +52,7 @@ let cachedData = null;
 
 export async function syncFromCloud() {
   const now = Date.now();
-  if (now - lastSyncTime < 2000 && cachedData) return cachedData;
+  if (now - lastSyncTime < 4000 && cachedData) return cachedData;
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3500);
@@ -62,11 +62,19 @@ export async function syncFromCloud() {
       const json = await res.json();
       if (json && json.data && Array.isArray(json.data.transactions)) {
         const local = loadData();
-        local.transactions = json.data.transactions;
-        if (json.data.settings) {
-          local.settings = { ...local.settings, ...json.data.settings };
+        const cloudUpdatedAt = json.data.updated_at || 0;
+        const localUpdatedAt = local.updated_at || 0;
+
+        if (cloudUpdatedAt >= localUpdatedAt || json.data.transactions.length > local.transactions.length) {
+          local.transactions = json.data.transactions;
+          if (json.data.settings) {
+            local.settings = { ...local.settings, ...json.data.settings };
+          }
+          local.updated_at = cloudUpdatedAt || now;
+          saveData(local, false);
+        } else if (localUpdatedAt > cloudUpdatedAt && local.transactions.length > json.data.transactions.length) {
+          pushToCloud(local).catch(() => {});
         }
-        saveData(local, false);
         lastSyncTime = now;
         return local;
       }
@@ -79,6 +87,7 @@ export async function syncFromCloud() {
 
 export async function pushToCloud(data) {
   try {
+    const payload = data || loadData();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3500);
     await fetch(CLOUD_STORE_URL, {
@@ -87,8 +96,9 @@ export async function pushToCloud(data) {
       body: JSON.stringify({
         name: 'catatduit_japuy_db',
         data: {
-          transactions: data.transactions || [],
-          settings: data.settings || {}
+          transactions: payload.transactions || [],
+          settings: payload.settings || {},
+          updated_at: payload.updated_at || Date.now()
         }
       }),
       signal: controller.signal
@@ -124,7 +134,9 @@ function loadData() {
 }
 
 function saveData(data, shouldPush = true) {
+  data.updated_at = Date.now();
   cachedData = data;
+  lastSyncTime = Date.now();
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -143,6 +155,9 @@ function saveData(data, shouldPush = true) {
 export const db = {
   syncFromCloud,
   pushToCloud,
+  getRawData() {
+    return loadData();
+  },
   getTransactions(filter = {}) {
     const data = loadData();
     let list = [...data.transactions];

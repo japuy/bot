@@ -50,7 +50,7 @@ router.get('/transactions', (req, res) => {
 });
 
 // Manual transaction creation
-router.post('/transactions', (req, res) => {
+router.post('/transactions', async (req, res) => {
   try {
     const { type, amount, description, category, created_at } = req.body;
     if (!amount || isNaN(amount)) {
@@ -67,6 +67,7 @@ router.post('/transactions', (req, res) => {
       created_at
     });
 
+    await db.pushToCloud(db.getRawData());
     res.json({ success: true, data: tx, summary: db.getSummary() });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -74,12 +75,13 @@ router.post('/transactions', (req, res) => {
 });
 
 // Update transaction
-router.put('/transactions/:id', (req, res) => {
+router.put('/transactions/:id', async (req, res) => {
   try {
     const updated = db.updateTransaction(req.params.id, req.body);
     if (!updated) {
       return res.status(404).json({ success: false, error: 'Transaksi tidak ditemukan.' });
     }
+    await db.pushToCloud(db.getRawData());
     res.json({ success: true, data: updated, summary: db.getSummary() });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -87,12 +89,13 @@ router.put('/transactions/:id', (req, res) => {
 });
 
 // Delete transaction
-router.delete('/transactions/:id', (req, res) => {
+router.delete('/transactions/:id', async (req, res) => {
   try {
     const deleted = db.deleteTransaction(req.params.id);
     if (!deleted) {
       return res.status(404).json({ success: false, error: 'Transaksi tidak ditemukan.' });
     }
+    await db.pushToCloud(db.getRawData());
     res.json({ success: true, data: deleted, summary: db.getSummary() });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -100,9 +103,10 @@ router.delete('/transactions/:id', (req, res) => {
 });
 
 // Clear all transactions
-router.post('/transactions/clear-all', (req, res) => {
+router.post('/transactions/clear-all', async (req, res) => {
   try {
     const count = db.clearAllTransactions();
+    await db.pushToCloud(db.getRawData());
     res.json({ success: true, message: `${count} transaksi berhasil dibersihkan.`, summary: db.getSummary() });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -128,7 +132,7 @@ router.put('/settings', (req, res) => {
 });
 
 // In-App Simulator
-router.post('/simulate-chat', (req, res) => {
+router.post('/simulate-chat', async (req, res) => {
   try {
     const { message } = req.body;
     if (!message || !message.trim()) {
@@ -136,7 +140,8 @@ router.post('/simulate-chat', (req, res) => {
     }
 
     const result = processWhatsAppMessage(message.trim());
-    res.json({ success: true, ...result });
+    await db.pushToCloud(db.getRawData());
+    res.json({ success: true, ...result, summary: db.getSummary() });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -254,6 +259,7 @@ router.post('/webhook/whatsapp', async (req, res) => {
 
     console.log(`[Webhook Incoming] from ${sender}: "${message}"`);
     const result = processWhatsAppMessage(message.trim());
+    await db.pushToCloud(db.getRawData());
 
     // Send WhatsApp Reply via Fonnte API
     if (sender && result.reply) {
