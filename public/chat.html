@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>CatatDuit - Chatbot Keuangan</title>
+  <meta name="description" content="Catat pengeluaran dan pemasukan semudah chatting WhatsApp langsung di HP tanpa risiko nomor terblokir.">
+  <meta name="theme-color" content="#1f2c34">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --wa-dark-bg: #0b141a;
+      --wa-header-bg: #1f2c34;
+      --wa-chat-bubble-user: #005c4b;
+      --wa-chat-bubble-bot: #202c33;
+      --wa-green: #25d366;
+      --wa-input-bg: #2a3942;
+      --wa-text-primary: #e9edef;
+      --wa-text-muted: #8696a0;
+      --wa-border: rgba(255, 255, 255, 0.08);
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #0d1418;
+      color: var(--wa-text-primary);
+      font-family: var(--font-sans);
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* Outer Wrapper */
+    .app-screen {
+      width: 100%;
+      height: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      background: var(--wa-dark-bg);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    /* Top Bar */
+    .chat-header {
+      background: var(--wa-header-bg);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--wa-border);
+      z-index: 10;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .btn-header-back {
+      background: transparent;
+      border: none;
+      color: var(--wa-text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .btn-header-back:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .bot-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #128c7e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      position: relative;
+    }
+
+    .bot-avatar svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .bot-meta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bot-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-bot {
+      font-size: 0.62rem;
+      font-weight: 700;
+      background: rgba(37, 211, 102, 0.15);
+      color: var(--wa-green);
+      border: 1px solid rgba(37, 211, 102, 0.3);
+      padding: 1px 5px;
+      border-radius: 999px;
+    }
+
+    .bot-status {
+      font-size: 0.74rem;
+      color: var(--wa-green);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--wa-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .btn-dashboard {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--wa-border);
+      color: var(--wa-text-primary);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+
+    .btn-dashboard:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-dashboard svg {
+      width: 14px;
+      height: 14px;
+      color: var(--wa-green);
+    }
+
+    /* Live Balance Strip */
+    .balance-strip {
+      background: #111b21;
+      padding: 0.45rem 1rem;
+      border-bottom: 1px solid var(--wa-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+    }
+
+    .balance-label {
+      color: var(--wa-text-muted);
+    }
+
+    .balance-amount {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* Chat Messages Body */
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      background-color: var(--wa-dark-bg);
+      background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 16px 16px;
+      scroll-behavior: smooth;
+    }
+
+    .date-divider {
+      align-self: center;
+      background: #182229;
+      color: var(--wa-text-muted);
+      font-size: 0.68rem;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0.25rem 0;
+    }
+
+    .bubble {
+      max-width: 85%;
+      padding: 0.65rem 0.85rem;
+      border-radius: 12px;
+      position: relative;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      word-break: break-word;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      animation: bubblePop 0.2s ease;
+    }
+
+    @keyframes bubblePop {
+      from { opacity: 0; transform: scale(0.96) translateY(5px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .bot-bubble {
+      align-self: flex-start;
+      background: var(--wa-chat-bubble-bot);
+      color: var(--wa-text-primary);
+      border-top-left-radius: 2px;
+    }
+
+    .user-bubble {
+      align-self: flex-end;
+      background: var(--wa-chat-bubble-user);
+      color: #fff;
+      border-top-right-radius: 2px;
+    }
+
+    .bubble-time {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.5);
+      display: block;
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    /* Quick Prompt Chips */
+    .quick-chips {
+      display: flex;
+      gap: 0.45rem;
+      padding: 0.5rem 0.75rem;
+      background: #111b21;
+      overflow-x: auto;
+      white-space: nowrap;
+      border-top: 1px solid var(--wa-border);
+    }
+
+    .quick-chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      background: #202c33;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #d1d7db;
+      font-size: 0.74rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+
+    .chip:hover, .chip:active {
+      background: #128c7e;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* Bottom Input Bar */
+    .chat-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 0.85rem;
+      background: var(--wa-header-bg);
+      border-top: 1px solid var(--wa-border);
+    }
+
+    .input-field-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .chat-input {
+      width: 100%;
+      background: var(--wa-input-bg);
+      border: none;
+      border-radius: 24px;
+      padding: 0.65rem 2.4rem 0.65rem 1rem;
+      color: #fff;
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .chat-input::placeholder {
+      color: var(--wa-text-muted);
+    }
+
+    .btn-mic {
+      position: absolute;
+      right: 8px;
+      background: transparent;
+      border: none;
+      color: var(--wa-text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .btn-mic.listening {
+      color: #f43f5e;
+      animation: pulse 1s infinite;
+    }
+
+    .btn-send {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--wa-green);
+      border: none;
+      color: #0b141a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s;
+      flex-shrink: 0;
+    }
+
+    .btn-send:hover, .btn-send:active {
+      transform: scale(1.08);
+      background: #20ba5a;
+    }
+
+    .btn-send svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Typing indicator */
+    .typing-bubble {
+      display: none;
+      align-self: flex-start;
+      background: var(--wa-chat-bubble-bot);
+      padding: 0.6rem 0.9rem;
+      border-radius: 12px;
+      border-top-left-radius: 2px;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .typing-bubble.active {
+      display: flex;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--wa-text-muted);
+      animation: typing 1.4s infinite both;
+    }
+
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-screen">
+    
+    <!-- Header -->
+    <header class="chat-header">
+      <div class="header-left">
+        <a href="/" class="btn-header-back" title="Kembali ke Dashboard">
+          <i data-lucide="chevron-left"></i>
+        </a>
+        <div class="bot-avatar">
+          <i data-lucide="bot"></i>
+        </div>
+        <div class="bot-meta">
+          <div class="bot-title">
+            <span>CatatDuit Bot</span>
+            <span class="badge-bot">AI Sync</span>
+          </div>
+          <div class="bot-status">
+            <span class="status-dot"></span> Online (Tanpa Blokir WA)
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button class="btn-dashboard" id="btnShareLink" title="Salin Link Chatbot">
+          <i data-lucide="share-2"></i>
+          <span id="btnShareText">Bagikan</span>
+        </button>
+        <a href="/" class="btn-dashboard" title="Buka Dashboard Lengkap">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- PWA Install / Home Screen Tip -->
+    <div id="pwaBanner" style="background: rgba(37, 211, 102, 0.08); border-bottom: 1px solid rgba(37, 211, 102, 0.15); padding: 0.45rem 1rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: #d1d7db;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <i data-lucide="smartphone" style="width: 15px; height: 15px; color: #25d366; flex-shrink: 0;"></i>
+        <span><strong>Tips HP:</strong> Buka link ini di browser HP lalu pilih <em>"Tambahkan ke Layar Utama"</em> untuk akses instan tanpa WA!</span>
+      </div>
+      <button onclick="document.getElementById('pwaBanner').style.display='none'" style="background: none; border: none; color: #8696a0; font-size: 1.1rem; cursor: pointer; padding: 0 4px; line-height: 1;">&times;</button>
+    </div>
+
+    <!-- Balance Strip -->
+    <div class="balance-strip">
+      <span class="balance-label">Total Saldo Terkini:</span>
+      <span class="balance-amount" id="headerBalance">Memuat...</span>
+    </div>
+
+    <!-- Chat Messages Body -->
+    <main class="chat-body" id="chatContainer">
+      <div class="date-divider">Hari ini</div>
+
+      <!-- Welcome Bot Bubble -->
+      <div class="bubble bot-bubble">
+        <div class="bubble-content">
+          Halo! 👋 Selamat datang di <strong>CatatDuit Chatbot</strong>.<br><br>
+          Kini Anda bisa mencatat keuangan semudah chatting tanpa khawatir risiko nomor WhatsApp terblokir!<br><br>
+          💡 <strong>Contoh yang bisa Anda ketik:</strong><br>
+          • <code>beli baso 15rb</code> atau <code>beli maso 15000</code><br>
+          • <code>bensin 30rb</code><br>
+          • <code>bayar listrik 150k</code><br>
+          • <code>gaji bulanan 5jt</code><br>
+          • <code>dapat transfer 250rb</code><br><br>
+          Ketik <strong>saldo</strong> untuk cek saldo atau <strong>batal</strong> jika salah catat.
+        </div>
+        <span class="bubble-time" id="welcomeTime">Sekarang</span>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-bubble" id="typingIndicator">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </main>
+
+    <!-- Quick Action Chips -->
+    <div class="quick-chips">
+      <button class="chip" data-msg="beli baso 15rb">🍜 beli baso 15rb</button>
+      <button class="chip" data-msg="beli maso 15000">🍲 beli maso 15000</button>
+      <button class="chip" data-msg="bensin 30rb">⛽ bensin 30rb</button>
+      <button class="chip" data-msg="bayar listrik 150k">⚡ bayar listrik 150k</button>
+      <button class="chip" data-msg="gaji bulanan 5jt">💼 gaji 5jt</button>
+      <button class="chip" data-msg="dapat transfer 250rb">💳 transfer 250rb</button>
+      <button class="chip" data-msg="saldo">📊 saldo</button>
+      <button class="chip" data-msg="laporan">📑 laporan</button>
+      <button class="chip" data-msg="batal">↩️ batal</button>
+    </div>
+
+    <!-- Chat Input Form -->
+    <form class="chat-input-bar" id="chatForm">
+      <div class="input-field-wrap">
+        <input type="text" class="chat-input" id="messageInput" placeholder="Ketik pesan (cth: beli baso 15rb)..." autocomplete="off" required>
+        <button type="button" class="btn-mic" id="btnMic" title="Bicara (Suara)">
+          <i data-lucide="mic"></i>
+        </button>
+      </div>
+      <button type="submit" class="btn-send" id="btnSend" title="Kirim">
+        <i data-lucide="send"></i>
+      </button>
+    </form>
+
+  </div>
+
+  <script>
+    // Audio Chime Generator using Web Audio API
+    function playBotChime() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } catch (e) {}
+    }
+
+    const chatContainer = document.getElementById('chatContainer');
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const headerBalance = document.getElementById('headerBalance');
+    const btnMic = document.getElementById('btnMic');
+
+    // Format Rupiah
+    function formatRupiah(num) {
+      return 'Rp ' + Number(num).toLocaleString('id-ID');
+    }
+
+    // Refresh Lucide Icons
+    function refreshIcons() {
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // Load Balance
+    async function updateBalance() {
+      try {
+        const res = await fetch('/api/summary');
+        const json = await res.json();
+        if (json.success && json.data) {
+          headerBalance.textContent = formatRupiah(json.data.totalBalance);
+        }
+      } catch (e) {
+        headerBalance.textContent = 'Rp 0';
+      }
+    }
+
+    // Append Message Bubble
+    function appendMessage(text, isBot = false) {
+      const bubble = document.createElement('div');
+      bubble.className = `bubble ${isBot ? 'bot-bubble' : 'user-bubble'}`;
+
+      const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const formatted = text
+        .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+        .replace(/_(.*?)_/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+
+      bubble.innerHTML = `
+        <div class="bubble-content">${formatted}</div>
+        <span class="bubble-time">${now}</span>
+      `;
+
+      // Insert before typing indicator
+      chatContainer.insertBefore(bubble, typingIndicator);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      if (isBot) {
+        playBotChime();
+      }
+    }
+
+    // Send Message Handler
+    async function sendMessage(text) {
+      if (!text || !text.trim()) return;
+      const clean = text.trim();
+      
+      appendMessage(clean, false);
+      messageInput.value = '';
+
+      // Show typing
+      typingIndicator.classList.add('active');
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      try {
+        const res = await fetch('/api/simulate-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: clean })
+        });
+        const json = await res.json();
+
+        setTimeout(() => {
+          typingIndicator.classList.remove('active');
+          if (json.reply) {
+            appendMessage(json.reply, true);
+          } else {
+            appendMessage('⚠️ Catatan berhasil disimpan ke database.', true);
+          }
+          updateBalance();
+        }, 350);
+
+      } catch (err) {
+        typingIndicator.classList.remove('active');
+        appendMessage('⚠️ Gagal terhubung ke server.', true);
+      }
+    }
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      sendMessage(messageInput.value);
+    });
+
+    // Quick Chips
+    document.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sendMessage(btn.dataset.msg);
+      });
+    });
+
+    // Voice Input (Web Speech API)
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'id-ID';
+      recognition.continuous = false;
+
+      btnMic.addEventListener('click', () => {
+        try {
+          recognition.start();
+          btnMic.classList.add('listening');
+        } catch (e) {
+          recognition.stop();
+          btnMic.classList.remove('listening');
+        }
+      });
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        messageInput.value = transcript;
+        btnMic.classList.remove('listening');
+        sendMessage(transcript);
+      };
+
+      recognition.onerror = () => btnMic.classList.remove('listening');
+      recognition.onend = () => btnMic.classList.remove('listening');
+    } else {
+      btnMic.style.display = 'none';
+    }
+
+    // Share / Copy Link Handler
+    const btnShareLink = document.getElementById('btnShareLink');
+    const btnShareText = document.getElementById('btnShareText');
+    if (btnShareLink) {
+      btnShareLink.addEventListener('click', async () => {
+        const url = window.location.href;
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: 'CatatDuit Chatbot',
+              text: 'Catat pengeluaran & pemasukan langsung di HP tanpa WA!',
+              url: url
+            });
+            return;
+          } catch (e) {}
+        }
+        navigator.clipboard.writeText(url).then(() => {
+          btnShareText.textContent = 'Tersalin! ✓';
+          setTimeout(() => { btnShareText.textContent = 'Bagikan'; }, 2000);
+        }).catch(() => {
+          prompt('Salin link ini:', url);
+        });
+      });
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      refreshIcons();
+      updateBalance();
+      const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const wt = document.getElementById('welcomeTime');
+      if (wt) wt.textContent = now;
+    });
+  </script>
+</body>
+</html>

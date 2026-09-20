@@ -1,6 +1,11 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "rewrites": [
+    {
+      "source": "/chat",
+      "destination": "/chat.html"
+    },
     {
       "source": "/api/(.*)",
       "destination": "/api/index.js"

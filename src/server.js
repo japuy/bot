@@ -23,6 +23,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+app.get('/chat', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'chat.html'));
+});
+
 // Server-Sent Events for real-time dashboard updates
 app.get('/api/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
