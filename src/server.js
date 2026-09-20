@@ -204,21 +204,52 @@ app.post('/api/simulate-chat', (req, res) => {
   }
 });
 
-// Generic WhatsApp Webhook for third-party providers (Fonnte, Twilio, Waha, etc.)
-app.post('/api/webhook/whatsapp', (req, res) => {
+// Helper: Kirim balasan via Server WhatsApp Pribadi (http://49.0.0.219:2222)
+async function sendWhatsAppViaGateway(number, text) {
+  const gatewayUrl = process.env.WA_SERVER_URL || 'http://49.0.0.219:2222';
+  const token = process.env.WA_SERVER_TOKEN || 'acafdbe8a13b5e6177e0c3a87e512fe6';
+
+  if (!gatewayUrl || !number || !text) return null;
+
   try {
-    // Handle various payload structures from third-party WA providers
-    const message = req.body.message || req.body.text || req.body.body || req.body.caption || '';
-    const sender = req.body.sender || req.body.from || req.body.phone || 'External Gateway';
+    const cleanNumber = String(number).replace(/[^0-9]/g, '');
+    const res = await fetch(`${gatewayUrl}/send-message`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Token': token
+      },
+      body: JSON.stringify({
+        number: cleanNumber,
+        message: text
+      })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    console.log(`[Gateway] Balasan terkirim ke ${cleanNumber}:`, data);
+    return data;
+  } catch (err) {
+    console.error(`[Gateway] Gagal mengirim pesan ke ${number}:`, err.message);
+    return null;
+  }
+}
+
+// Generic WhatsApp Webhook for external providers & personal WA Server
+app.post('/api/webhook/whatsapp', async (req, res) => {
+  try {
+    // Handle various payload structures from third-party WA providers & custom server
+    const message = req.body.message || req.body.text || req.body.body || req.body.caption || req.body.msg || '';
+    const sender = req.body.number || req.body.sender || req.body.from || req.body.phone || req.body.chatId || '';
 
     if (!message) {
       return res.json({ success: true, message: 'No text found in payload' });
     }
 
+    console.log(`[Webhook] Pesan masuk dari ${sender}: "${message}"`);
     const result = processWhatsAppMessage(message);
 
     broadcast('new_message', {
-      sender,
+      sender: sender || 'External Gateway',
       text: message,
       fromMe: false,
       result
@@ -228,6 +259,11 @@ app.post('/api/webhook/whatsapp', (req, res) => {
       broadcast('transaction_added', result.transaction);
     } else if (result.status === 'command' && result.deleted) {
       broadcast('transaction_deleted', result.deleted);
+    }
+
+    // Auto send reply via custom WhatsApp Server if sender number is present
+    if (sender && result.reply) {
+      await sendWhatsAppViaGateway(sender, result.reply);
     }
 
     // Return response in format useful for webhook auto-reply
