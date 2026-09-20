@@ -148,7 +148,8 @@ app.get('/api/whatsapp/status', (req, res) => {
 
 // Helper: Kirim pesan balasan via Fonnte API
 async function sendFonnte(target, replyText) {
-  const token = process.env.FONNTE_TOKEN || 'BfMDrng3jS2CkudCyhW9';
+  const settings = db.getSettings();
+  const token = settings.fonnte_token || process.env.FONNTE_TOKEN || 'BfMDrng3jS2CkudCyhW9';
   if (!target || !replyText) return null;
   try {
     const cleanTarget = String(target).replace(/[^0-9]/g, '');
@@ -171,6 +172,43 @@ async function sendFonnte(target, replyText) {
     return null;
   }
 }
+
+// Validasi & Simpan Token Fonnte secara Manual
+app.post('/api/fonnte/validate', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token || !token.trim()) {
+      return res.status(400).json({ success: false, error: 'Token tidak boleh kosong' });
+    }
+    const cleanToken = token.trim();
+    const testRes = await fetch('https://api.fonnte.com/device', {
+      method: 'POST',
+      headers: { 'Authorization': cleanToken }
+    });
+    const data = await testRes.json().catch(() => ({}));
+    if (data.status === false) {
+      return res.json({ success: false, error: data.reason || 'Token tidak valid' });
+    }
+    
+    // Simpan token & info bot ke settings db
+    db.updateSettings({
+      fonnte_token: cleanToken,
+      bot_phone: data.device || 'Terhubung',
+      bot_name: data.name || 'Bot WA'
+    });
+
+    return res.json({
+      success: true,
+      message: 'Token berhasil divalidasi dan tersimpan!',
+      device: data.device,
+      name: data.name,
+      status: data.device_status,
+      quota: data.quota
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // Webhook GET & POST
 app.get('/api/webhook/whatsapp', (req, res) => {

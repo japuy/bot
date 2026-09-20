@@ -234,6 +234,70 @@ async function sendWhatsAppViaGateway(number, text) {
   }
 }
 
+// Helper: Kirim balasan via Fonnte API
+async function sendFonnte(target, replyText) {
+  const settings = db.getSettings();
+  const token = settings.fonnte_token || process.env.FONNTE_TOKEN || 'BfMDrng3jS2CkudCyhW9';
+  if (!target || !replyText) return null;
+  try {
+    const cleanTarget = String(target).replace(/[^0-9]/g, '');
+    const res = await fetch('https://api.fonnte.com/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        target: cleanTarget,
+        message: replyText
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    console.log(`[Fonnte Auto-Reply to ${cleanTarget}]:`, data);
+    return data;
+  } catch (err) {
+    console.error(`[Fonnte Auto-Reply Error to ${target}]:`, err.message);
+    return null;
+  }
+}
+
+// Validasi & Simpan Token Fonnte secara Manual
+app.post('/api/fonnte/validate', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token || !token.trim()) {
+      return res.status(400).json({ success: false, error: 'Token tidak boleh kosong' });
+    }
+    const cleanToken = token.trim();
+    const testRes = await fetch('https://api.fonnte.com/device', {
+      method: 'POST',
+      headers: { 'Authorization': cleanToken }
+    });
+    const data = await testRes.json().catch(() => ({}));
+    if (data.status === false) {
+      return res.json({ success: false, error: data.reason || 'Token tidak valid' });
+    }
+    
+    // Simpan token & info bot ke settings db
+    db.updateSettings({
+      fonnte_token: cleanToken,
+      bot_phone: data.device || 'Terhubung',
+      bot_name: data.name || 'Bot WA'
+    });
+
+    return res.json({
+      success: true,
+      message: 'Token berhasil divalidasi dan tersimpan!',
+      device: data.device,
+      name: data.name,
+      status: data.device_status,
+      quota: data.quota
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Webhook GET verification (wajib untuk verifikasi Fonnte & provider lain)
 app.get('/api/webhook/whatsapp', (req, res) => {
   res.status(200).json({ status: 'Webhook is active and ready!', method: 'GET' });
@@ -243,15 +307,34 @@ app.get('/api/webhook/whatsapp', (req, res) => {
 app.post('/api/webhook/whatsapp', async (req, res) => {
   try {
     // Handle various payload structures from third-party WA providers & custom server
-    const message = req.body.message || req.body.text || req.body.body || req.body.caption || req.body.msg || '';
-    const sender = req.body.number || req.body.sender || req.body.from || req.body.phone || req.body.chatId || '';
-
+    let message = req.body.message || req.body.pesan || '';
+    if (!message && req.body.text && req.body.text !== 'non-button message') {
+      message = req.body.text;
+    }
     if (!message) {
+      message = req.body.body || req.body.caption || req.body.msg || '';
+    }
+
+    const sender = req.body.number || req.body.sender || req.body.pengirim || req.body.from || req.body.phone || req.body.chatId || '';
+
+    if (!message || message.trim().length === 0) {
       return res.json({ success: true, message: 'No text found in payload' });
     }
 
+    // Abaikan pesan balasan bot sendiri
+    if (
+      message.includes('CATATAN DISIMPAN') ||
+      message.includes('INFORMASI SALDO') ||
+      message.includes('LAPORAN KEUANGAN') ||
+      message.includes('TRANSAKSI BERHASIL DIBATALKAN') ||
+      message.includes('PANDUAN CATAT DUIT') ||
+      message.includes('fonnte.com')
+    ) {
+      return res.json({ success: true, message: 'Ignored bot echo message' });
+    }
+
     console.log(`[Webhook] Pesan masuk dari ${sender}: "${message}"`);
-    const result = processWhatsAppMessage(message);
+    const result = processWhatsAppMessage(message.trim());
 
     broadcast('new_message', {
       sender: sender || 'External Gateway',
@@ -266,9 +349,10 @@ app.post('/api/webhook/whatsapp', async (req, res) => {
       broadcast('transaction_deleted', result.deleted);
     }
 
-    // Auto send reply via custom WhatsApp Server if sender number is present
+    // Auto send reply via custom WhatsApp Server & Fonnte
     if (sender && result.reply) {
       await sendWhatsAppViaGateway(sender, result.reply);
+      await sendFonnte(sender, result.reply);
     }
 
     // Return response in format useful for Fonnte & webhook auto-reply

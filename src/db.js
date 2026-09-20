@@ -38,7 +38,9 @@ function getInitialData() {
       currency: 'IDR',
       monthly_budget: 3000000,
       bot_name: 'CatatDuit WA Bot',
-      auto_reply: true
+      auto_reply: true,
+      fonnte_token: 'BfMDrng3jS2CkudCyhW9',
+      bot_phone: '089639386199'
     }
   };
 }

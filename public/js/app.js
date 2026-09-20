@@ -936,6 +936,93 @@ function setupEventListeners() {
       showToast('Gagal menyimpan target budget', 'error');
     }
   });
+
+  // Token Modal Controls
+  const modalToken = document.getElementById('modalToken');
+  const btnOpenToken = document.getElementById('btnOpenTokenModal');
+  const inputFonnteToken = document.getElementById('inputFonnteToken');
+  const inputTabToken = document.getElementById('inputTabToken');
+
+  async function loadTokenSettings() {
+    try {
+      const res = await fetch('/api/settings');
+      const json = await res.json();
+      if (json.success && json.data) {
+        const token = json.data.fonnte_token || 'BfMDrng3jS2CkudCyhW9';
+        const phone = json.data.bot_phone || '089639386199';
+        if (inputFonnteToken) inputFonnteToken.value = token;
+        if (inputTabToken) inputTabToken.value = token;
+        const phoneEl = document.getElementById('tabTokenPhone');
+        if (phoneEl) phoneEl.textContent = phone;
+        const modalPhoneEl = document.getElementById('modalTokenPhone');
+        if (modalPhoneEl) modalPhoneEl.textContent = phone;
+      }
+    } catch (e) {}
+  }
+
+  if (btnOpenToken) {
+    btnOpenToken.addEventListener('click', async () => {
+      await loadTokenSettings();
+      modalToken.classList.remove('hidden');
+      refreshIcons();
+    });
+  }
+
+  const btnCloseToken = document.getElementById('btnCloseTokenModal');
+  const btnCancelToken = document.getElementById('btnCancelToken');
+  if (btnCloseToken) btnCloseToken.addEventListener('click', () => modalToken.classList.add('hidden'));
+  if (btnCancelToken) btnCancelToken.addEventListener('click', () => modalToken.classList.add('hidden'));
+
+  async function handleSaveToken(tokenValue) {
+    if (!tokenValue || !tokenValue.trim()) {
+      showToast('Token tidak boleh kosong', 'error');
+      return;
+    }
+    showToast('Memvalidasi token ke server Fonnte...');
+    try {
+      const res = await fetch('/api/fonnte/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tokenValue.trim() })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast(`Token valid! Bot terhubung ke ${json.device || 'WhatsApp'}`);
+        if (modalToken) modalToken.classList.add('hidden');
+        if (inputFonnteToken) inputFonnteToken.value = tokenValue.trim();
+        if (inputTabToken) inputTabToken.value = tokenValue.trim();
+        
+        const phoneEl = document.getElementById('tabTokenPhone');
+        if (phoneEl) phoneEl.textContent = json.device || 'Aktif';
+        const quotaEl = document.getElementById('tabTokenQuota');
+        if (quotaEl) quotaEl.textContent = json.quota || '-';
+
+        const modalPhoneEl = document.getElementById('modalTokenPhone');
+        if (modalPhoneEl) modalPhoneEl.textContent = json.device || 'Aktif';
+        const modalQuotaEl = document.getElementById('modalTokenQuota');
+        if (modalQuotaEl) modalQuotaEl.textContent = `Sisa Kuota: ${json.quota || '-'} pesan`;
+      } else {
+        showToast(json.error || 'Token tidak valid. Pastikan token Fonnte benar.', 'error');
+      }
+    } catch (err) {
+      showToast('Gagal memvalidasi token', 'error');
+    }
+  }
+
+  const formToken = document.getElementById('formToken');
+  if (formToken) {
+    formToken.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleSaveToken(inputFonnteToken.value);
+    });
+  }
+
+  const btnSaveTabToken = document.getElementById('btnSaveTabToken');
+  if (btnSaveTabToken) {
+    btnSaveTabToken.addEventListener('click', () => {
+      handleSaveToken(inputTabToken.value);
+    });
+  }
 }
 
 // Bootstrap Application
@@ -947,6 +1034,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadTransactions();
   await checkWhatsAppStatus();
   initSSE();
+
+  // Load token settings on startup
+  try {
+    const res = await fetch('/api/settings');
+    const json = await res.json();
+    if (json.success && json.data) {
+      const token = json.data.fonnte_token || 'BfMDrng3jS2CkudCyhW9';
+      const phone = json.data.bot_phone || '089639386199';
+      const inputTab = document.getElementById('inputTabToken');
+      if (inputTab) inputTab.value = token;
+      const phoneEl = document.getElementById('tabTokenPhone');
+      if (phoneEl) phoneEl.textContent = phone;
+    }
+  } catch (e) {}
 
   // Periodic WA status poll
   setInterval(checkWhatsAppStatus, 8000);

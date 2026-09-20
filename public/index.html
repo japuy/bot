@@ -51,6 +51,11 @@
           <span>Budget</span>
         </button>
 
+        <button class="btn btn-secondary" id="btnOpenTokenModal" title="Atur Token WhatsApp Fonnte">
+          <i data-lucide="key"></i>
+          <span>Token WA</span>
+        </button>
+
         <button class="btn btn-primary" id="btnOpenAddModal">
           <i data-lucide="plus-circle"></i>
           <span>Tambah Manual</span>
@@ -439,6 +444,28 @@
   "sender": "628123456789"
 }</code></pre>
                 </div>
+
+                <!-- Input Token Manual Fonnte -->
+                <div class="token-settings-card" style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 0.65rem;">
+                    <h4 style="color:#fff; font-size:0.92rem; display:flex; align-items:center; gap:0.4rem;">
+                      <i data-lucide="key" class="text-wa"></i> Token Fonnte / WhatsApp
+                    </h4>
+                    <span class="badge text-emerald" id="tabTokenStatus">🟢 Aktif</span>
+                  </div>
+                  <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">
+                    Ubah token di sini jika Anda mengganti device atau nomor WhatsApp:
+                  </p>
+                  <div class="copy-url-group">
+                    <input type="text" id="inputTabToken" placeholder="Masukkan Token Fonnte..." value="BfMDrng3jS2CkudCyhW9">
+                    <button class="btn btn-primary btn-sm" id="btnSaveTabToken">
+                      <i data-lucide="save"></i> Simpan
+                    </button>
+                  </div>
+                  <div style="margin-top:0.65rem; font-size:0.76rem; color:var(--text-dim);" id="tabTokenDetail">
+                    Terhubung ke: <strong style="color:#fff;" id="tabTokenPhone">089639386199</strong> (Sisa kuota: <span id="tabTokenQuota">935</span> pesan)
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -555,6 +582,44 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-outline" id="btnCancelBudget">Batal</button>
             <button type="submit" class="btn btn-primary">Simpan Budget</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Pengaturan Token WhatsApp Fonnte -->
+    <div class="modal-overlay hidden" id="modalToken">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i data-lucide="key" class="text-wa"></i>
+            <h3>Pengaturan Token WhatsApp</h3>
+          </div>
+          <button class="btn-close-modal" id="btnCloseTokenModal">&times;</button>
+        </div>
+
+        <form id="formToken" class="modal-form">
+          <p class="modal-note">Masukkan <strong>Device Token Fonnte</strong> Anda di sini. Jika Anda mengganti device atau nomor WhatsApp bot, perbarui token di sini agar sistem langsung terhubung kembali tanpa perlu koding ulang.</p>
+          
+          <div class="form-group">
+            <label for="inputFonnteToken">Device Token Fonnte</label>
+            <input type="text" id="inputFonnteToken" required placeholder="Contoh: BfMDrng3jS2CkudCyhW9..." value="BfMDrng3jS2CkudCyhW9" autocomplete="off">
+          </div>
+
+          <div class="token-info-box" id="modalTokenInfoBox" style="background:var(--bg-subtle); padding:0.85rem; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:0.82rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span id="modalTokenStatus">🟢 Terhubung</span>
+              <strong style="color:#fff;" id="modalTokenPhone">089639386199</strong>
+            </div>
+            <div style="color:var(--text-dim); font-size:0.75rem;" id="modalTokenQuota">Sisa Kuota: 935 pesan</div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btnCancelToken">Batal</button>
+            <button type="submit" class="btn btn-primary" id="btnSubmitToken">
+              <i data-lucide="check"></i>
+              <span>Simpan & Validasi</span>
+            </button>
           </div>
         </form>
       </div>
