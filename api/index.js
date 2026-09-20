@@ -194,6 +194,18 @@ app.post('/api/webhook/whatsapp', async (req, res) => {
       return res.json({ reply: 'Pesan tidak ditemukan' });
     }
 
+    // Abaikan pesan balasan bot sendiri (mencegah loop echo)
+    if (
+      message.includes('CATATAN DISIMPAN') ||
+      message.includes('INFORMASI SALDO') ||
+      message.includes('LAPORAN KEUANGAN') ||
+      message.includes('TRANSAKSI BERHASIL DIBATALKAN') ||
+      message.includes('PANDUAN CATAT DUIT') ||
+      message.includes('fonnte.com')
+    ) {
+      return res.json({ success: true, message: 'Ignored bot echo message' });
+    }
+
     console.log(`[Webhook Incoming] from ${sender}: "${message}"`);
     const result = processWhatsAppMessage(message.trim());
 
