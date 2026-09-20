@@ -71,9 +71,16 @@ function loadData() {
 
 function saveData(data) {
   cachedData = data;
-  const tmpFile = `${DB_FILE}.tmp`;
-  fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf-8');
-  fs.renameSync(tmpFile, DB_FILE);
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    const tmpFile = `${DB_FILE}.tmp`;
+    fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf-8');
+    fs.renameSync(tmpFile, DB_FILE);
+  } catch (err) {
+    console.warn('[DB] saveData warning (fallback to memory):', err.message);
+  }
 }
 
 export const db = {

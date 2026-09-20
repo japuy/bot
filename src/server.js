@@ -283,16 +283,18 @@ app.post('/api/webhook/whatsapp', async (req, res) => {
   }
 });
 
-// Start Express server
-const server = app.listen(PORT, () => {
-  console.log(`\n========================================`);
-  console.log(`🚀 CatatDuit Finance Web App running!`);
-  console.log(`🌐 Dashboard: http://localhost:${PORT}`);
-  console.log(`📡 WA Webhook: http://localhost:${PORT}/api/webhook/whatsapp`);
-  console.log(`========================================\n`);
+// Start Express server only when running standalone (not inside Vercel serverless)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`\n========================================`);
+    console.log(`🚀 CatatDuit Finance Web App running!`);
+    console.log(`🌐 Dashboard: http://localhost:${PORT}`);
+    console.log(`📡 WA Webhook: http://localhost:${PORT}/api/webhook/whatsapp`);
+    console.log(`========================================\n`);
 
-  // Auto initialize WhatsApp manager
-  initWhatsApp();
-});
+    // Auto initialize WhatsApp manager
+    initWhatsApp();
+  });
+}
 
 export default app;
