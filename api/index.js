@@ -4,13 +4,14 @@ import { db } from '../src/db.js';
 import { processWhatsAppMessage } from '../src/parser.js';
 
 const app = express();
+const router = express.Router();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // SSE placeholder for Vercel (serverless doesn't support long-running SSE)
-app.get('/api/events', (req, res) => {
+router.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -19,7 +20,7 @@ app.get('/api/events', (req, res) => {
 });
 
 // Summary & KPI analytics
-app.get('/api/summary', (req, res) => {
+router.get('/summary', (req, res) => {
   try {
     const { month, year } = req.query;
     const summary = db.getSummary(month, year);
@@ -30,7 +31,7 @@ app.get('/api/summary', (req, res) => {
 });
 
 // Transactions list
-app.get('/api/transactions', (req, res) => {
+router.get('/transactions', (req, res) => {
   try {
     const { type, category, search, startDate, endDate, limit, offset } = req.query;
     const result = db.getTransactions({ type, category, search, startDate, endDate, limit, offset });
@@ -41,7 +42,7 @@ app.get('/api/transactions', (req, res) => {
 });
 
 // Manual transaction creation
-app.post('/api/transactions', (req, res) => {
+router.post('/transactions', (req, res) => {
   try {
     const { type, amount, description, category, created_at } = req.body;
     if (!amount || isNaN(amount)) {
@@ -65,7 +66,7 @@ app.post('/api/transactions', (req, res) => {
 });
 
 // Update transaction
-app.put('/api/transactions/:id', (req, res) => {
+router.put('/transactions/:id', (req, res) => {
   try {
     const updated = db.updateTransaction(req.params.id, req.body);
     if (!updated) {
@@ -78,7 +79,7 @@ app.put('/api/transactions/:id', (req, res) => {
 });
 
 // Delete transaction
-app.delete('/api/transactions/:id', (req, res) => {
+router.delete('/transactions/:id', (req, res) => {
   try {
     const deleted = db.deleteTransaction(req.params.id);
     if (!deleted) {
@@ -91,7 +92,7 @@ app.delete('/api/transactions/:id', (req, res) => {
 });
 
 // Clear all transactions
-app.post('/api/transactions/clear-all', (req, res) => {
+router.post('/transactions/clear-all', (req, res) => {
   try {
     const count = db.clearAllTransactions();
     res.json({ success: true, message: `${count} transaksi berhasil dibersihkan.`, summary: db.getSummary() });
@@ -101,15 +102,15 @@ app.post('/api/transactions/clear-all', (req, res) => {
 });
 
 // Categories & Settings
-app.get('/api/categories', (req, res) => {
+router.get('/categories', (req, res) => {
   res.json({ success: true, data: db.getCategories() });
 });
 
-app.get('/api/settings', (req, res) => {
+router.get('/settings', (req, res) => {
   res.json({ success: true, data: db.getSettings() });
 });
 
-app.put('/api/settings', (req, res) => {
+router.put('/settings', (req, res) => {
   try {
     const updated = db.updateSettings(req.body);
     res.json({ success: true, data: updated });
@@ -119,7 +120,7 @@ app.put('/api/settings', (req, res) => {
 });
 
 // In-App Simulator
-app.post('/api/simulate-chat', (req, res) => {
+router.post('/simulate-chat', (req, res) => {
   try {
     const { message } = req.body;
     if (!message || !message.trim()) {
@@ -134,7 +135,7 @@ app.post('/api/simulate-chat', (req, res) => {
 });
 
 // WhatsApp Status for Vercel
-app.get('/api/whatsapp/status', (req, res) => {
+router.get('/whatsapp/status', (req, res) => {
   res.json({
     success: true,
     data: {
@@ -174,7 +175,7 @@ async function sendFonnte(target, replyText) {
 }
 
 // Validasi & Simpan Token Fonnte secara Manual
-app.post('/api/fonnte/validate', async (req, res) => {
+router.post('/fonnte/validate', async (req, res) => {
   try {
     const { token } = req.body;
     if (!token || !token.trim()) {
@@ -211,13 +212,12 @@ app.post('/api/fonnte/validate', async (req, res) => {
 });
 
 // Webhook GET & POST
-app.get('/api/webhook/whatsapp', (req, res) => {
+router.get('/webhook/whatsapp', (req, res) => {
   res.status(200).json({ status: 'Webhook is active and ready!', method: 'GET' });
 });
 
-app.post('/api/webhook/whatsapp', async (req, res) => {
+router.post('/webhook/whatsapp', async (req, res) => {
   try {
-    // Fonnte payload: { message: "beli baso 15rb", pesan: "beli baso 15rb", sender: "628...", pengirim: "628..." }
     let message = req.body.message || req.body.pesan || '';
     if (!message && req.body.text && req.body.text !== 'non-button message') {
       message = req.body.text;
@@ -264,5 +264,9 @@ app.post('/api/webhook/whatsapp', async (req, res) => {
     res.status(500).json({ reply: 'Terjadi kesalahan sistem' });
   }
 });
+
+// Mount router on both /api and / so all paths match regardless of rewrite prefix
+app.use('/api', router);
+app.use('/', router);
 
 export default app;
