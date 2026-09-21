@@ -218,98 +218,7 @@
       "keywords": []
     }
   ],
-  "transactions": [
-    {
-      "id": "tx_1789989257865_1sdeb4",
-      "type": "expense",
-      "amount": 15000,
-      "description": "Beli baso",
-      "category": "Makanan & Minuman",
-      "raw_message": "beli baso 15rb",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:14:17.865Z"
-    },
-    {
-      "id": "tx_1789989255821_5oewb3",
-      "type": "expense",
-      "amount": 100000,
-      "description": "Budi",
-      "category": "Lain-lain",
-      "raw_message": "budi 100k",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:14:15.821Z"
-    },
-    {
-      "id": "tx_1789989253990_7p9evi",
-      "type": "expense",
-      "amount": 120,
-      "description": "Lisa",
-      "category": "Lain-lain",
-      "raw_message": "Lisa 120",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:14:13.990Z"
-    },
-    {
-      "id": "tx_1789989253035_kscgaj",
-      "type": "expense",
-      "amount": 150000,
-      "description": "Romi",
-      "category": "Lain-lain",
-      "raw_message": "romi 150rb",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:14:13.035Z"
-    },
-    {
-      "id": "tx_1789989156057_d4wgd3",
-      "type": "expense",
-      "amount": 15000,
-      "description": "Beli baso",
-      "category": "Makanan & Minuman",
-      "raw_message": "beli baso 15rb",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:12:36.057Z"
-    },
-    {
-      "id": "tx_1789989152863_v1536k",
-      "type": "expense",
-      "amount": 150000,
-      "description": "Pak slamet",
-      "category": "Lain-lain",
-      "raw_message": "pak slamet 150.000",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:12:32.863Z"
-    },
-    {
-      "id": "tx_1789989150607_1qc3he",
-      "type": "expense",
-      "amount": 100000,
-      "description": "Budi",
-      "category": "Lain-lain",
-      "raw_message": "budi 100k",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:12:30.607Z"
-    },
-    {
-      "id": "tx_1789989044956_4t04vc",
-      "type": "income",
-      "amount": 120000,
-      "description": "Lisa",
-      "category": "Pembayaran Internet",
-      "raw_message": "Lisa 120",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:10:44.956Z"
-    },
-    {
-      "id": "tx_1789988702080_xtdlu6",
-      "type": "expense",
-      "amount": 120,
-      "description": "Lisa",
-      "category": "Lain-lain",
-      "raw_message": "Lisa 120",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:05:02.080Z"
-    }
-  ],
+  "transactions": [],
   "settings": {
     "currency": "IDR",
     "monthly_budget": 3000000,
@@ -318,5 +227,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789989759853
+  "updated_at": 1789989772929
 }
