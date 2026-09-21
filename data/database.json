@@ -220,6 +220,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1789988502688_d5csah",
+      "type": "expense",
+      "amount": 22000,
+      "description": "Beli Aqua",
+      "category": "Belanja Kebutuhan",
+      "raw_message": "Beli Aqua 22rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-21T11:01:42.688Z"
+    },
+    {
       "id": "tx_1789988465694_6oo4dj",
       "type": "expense",
       "amount": 36000,
@@ -268,5 +278,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789988465694
+  "updated_at": 1789988502688
 }
