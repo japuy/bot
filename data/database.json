@@ -1,23 +1,6 @@
 {
   "categories": [
     {
-      "id": "cat_internet",
-      "name": "Pembayaran Internet",
-      "icon": "wifi",
-      "color": "#0ea5e9",
-      "keywords": [
-        "internet",
-        "wifi",
-        "wifian",
-        "voucher",
-        "iuran",
-        "tagihan internet",
-        "bayar internet",
-        "bayar wifi",
-        "langganan"
-      ]
-    },
-    {
       "id": "cat_makanan",
       "name": "Makanan & Minuman",
       "icon": "utensils",
@@ -255,5 +238,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789988972284
+  "updated_at": 1789988982641
 }
