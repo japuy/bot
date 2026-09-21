@@ -220,6 +220,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1789988612687_q03g02",
+      "type": "expense",
+      "amount": 55000,
+      "description": "Beli lampu",
+      "category": "Belanja Kebutuhan",
+      "raw_message": "Beli lampu 55rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-21T11:03:32.687Z"
+    },
+    {
       "id": "tx_1789988502688_d5csah",
       "type": "expense",
       "amount": 22000,
@@ -278,5 +288,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789988585208
+  "updated_at": 1789988612687
 }
