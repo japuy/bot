@@ -220,6 +220,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1789992681023_llgdx4",
+      "type": "expense",
+      "amount": 5000,
+      "description": "Beli cilok",
+      "category": "Belanja Kebutuhan",
+      "raw_message": "Beli cilok 5rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-21T12:11:21.023Z"
+    },
+    {
       "id": "tx_1789992657023_jpkc1g",
       "type": "income",
       "amount": 120000,
@@ -248,5 +258,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789992657023
+  "updated_at": 1789992681023
 }
