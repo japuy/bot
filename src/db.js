@@ -96,6 +96,9 @@ export async function syncFromCloud(force = false) {
             if (cloudData.settings) {
               local.settings = { ...local.settings, ...cloudData.settings };
             }
+            if (cloudData.categories) {
+              local.categories = cloudData.categories;
+            }
             local.updated_at = cloudUpdatedAt || Date.now();
             saveData(local, false);
           } else if (localUpdatedAt > cloudUpdatedAt) {
