@@ -45,14 +45,14 @@ function getInitialData() {
   };
 }
 
-const CLOUD_STORE_URL = 'https://api.restful-api.dev/objects/ff808181a09d98f701a0c33804825e4e';
+const CLOUD_STORE_URL = 'https://api.restful-api.dev/objects/ff808181a09d98f701a0c36ae16f5f2f';
 let lastSyncTime = 0;
 
 let cachedData = null;
 
 export async function syncFromCloud() {
   const now = Date.now();
-  if (now - lastSyncTime < 4000 && cachedData) return cachedData;
+  if (now - lastSyncTime < 3000 && cachedData) return cachedData;
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3500);
@@ -65,14 +65,14 @@ export async function syncFromCloud() {
         const cloudUpdatedAt = json.data.updated_at || 0;
         const localUpdatedAt = local.updated_at || 0;
 
-        if (cloudUpdatedAt >= localUpdatedAt || json.data.transactions.length > local.transactions.length) {
+        if (cloudUpdatedAt > localUpdatedAt) {
           local.transactions = json.data.transactions;
           if (json.data.settings) {
             local.settings = { ...local.settings, ...json.data.settings };
           }
-          local.updated_at = cloudUpdatedAt || now;
+          local.updated_at = cloudUpdatedAt;
           saveData(local, false);
-        } else if (localUpdatedAt > cloudUpdatedAt && local.transactions.length > json.data.transactions.length) {
+        } else if (localUpdatedAt > cloudUpdatedAt) {
           pushToCloud(local).catch(() => {});
         }
         lastSyncTime = now;
@@ -90,11 +90,11 @@ export async function pushToCloud(data) {
     const payload = data || loadData();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3500);
-    await fetch(CLOUD_STORE_URL, {
+    const res = await fetch(CLOUD_STORE_URL, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: 'catatduit_japuy_db',
+        name: 'catatduit_personal_db',
         data: {
           transactions: payload.transactions || [],
           settings: payload.settings || {},
@@ -104,8 +104,10 @@ export async function pushToCloud(data) {
       signal: controller.signal
     });
     clearTimeout(timeout);
+    return res.ok;
   } catch (err) {
     console.warn('[DB] pushToCloud warning:', err.message);
+    return false;
   }
 }
 
@@ -247,7 +249,9 @@ export const db = {
     const data = loadData();
     const count = data.transactions.length;
     data.transactions = [];
-    saveData(data);
+    data.updated_at = Date.now();
+    saveData(data, false);
+    pushToCloud(data).catch(() => {});
     return count;
   },
 

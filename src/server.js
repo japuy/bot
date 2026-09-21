@@ -127,9 +127,10 @@ app.delete('/api/transactions/:id', (req, res) => {
 });
 
 // Clear all transactions (Fresh reset)
-app.post('/api/transactions/clear-all', (req, res) => {
+app.post('/api/transactions/clear-all', async (req, res) => {
   try {
     const count = db.clearAllTransactions();
+    await db.pushToCloud(db.getRawData());
     broadcast('transaction_deleted', { all: true });
     res.json({ success: true, message: `${count} transaksi berhasil dibersihkan. Data kini segar seperti baru!`, summary: db.getSummary() });
   } catch (err) {

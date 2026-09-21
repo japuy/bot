@@ -221,6 +221,16 @@ export function processWhatsAppMessage(messageText) {
     return { status: 'command', command: 'undo', reply, deleted };
   }
 
+  if (lower === 'reset' || lower === 'reset saldo' || lower === 'reset data' || lower === 'hapus semua' || lower === 'clear') {
+    const count = db.clearAllTransactions();
+    const reply = `🧹 *DATA & SALDO BERHASIL DIRESET!*\n` +
+      `━━━━━━━━━━━━━━━━━━━\n` +
+      `Seluruh riwayat transaksi (${count} transaksi) telah dihapus.\n\n` +
+      `💳 *Saldo sekarang*: Rp 0\n` +
+      `_Catatan keuangan Anda kini bersih dan siap digunakan kembali._`;
+    return { status: 'command', command: 'reset', reply };
+  }
+
   if (lower === 'bantuan' || lower === 'help' || lower === 'menu' || lower === 'panduan') {
     const reply = `🤖 *PANDUAN CATAT DUIT BOT*\n` +
       `━━━━━━━━━━━━━━━━━━━\n` +
