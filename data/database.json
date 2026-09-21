@@ -1,6 +1,23 @@
 {
   "categories": [
     {
+      "id": "cat_internet",
+      "name": "Pembayaran Internet",
+      "icon": "wifi",
+      "color": "#0ea5e9",
+      "keywords": [
+        "internet",
+        "wifi",
+        "wifian",
+        "voucher",
+        "iuran",
+        "tagihan internet",
+        "bayar internet",
+        "bayar wifi",
+        "langganan"
+      ]
+    },
+    {
       "id": "cat_makanan",
       "name": "Makanan & Minuman",
       "icon": "utensils",
@@ -220,21 +237,11 @@
   ],
   "transactions": [
     {
-      "id": "tx_1789989044956_4t04vc",
+      "id": "tx_1789988702080_xtdlu6",
       "type": "income",
       "amount": 120000,
       "description": "Lisa",
       "category": "Pembayaran Internet",
-      "raw_message": "Lisa 120",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T11:10:44.956Z"
-    },
-    {
-      "id": "tx_1789988702080_xtdlu6",
-      "type": "expense",
-      "amount": 120,
-      "description": "Lisa",
-      "category": "Lain-lain",
       "raw_message": "Lisa 120",
       "source": "whatsapp",
       "created_at": "2026-09-21T11:05:02.080Z"
@@ -248,5 +255,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789989054611
+  "updated_at": 1789989054099
 }
