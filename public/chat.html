@@ -562,11 +562,11 @@
       try {
         const res = await fetch('/api/summary');
         const json = await res.json();
-        if (json.success && json.data) {
+        if (json.success && json.data && json.data.totalBalance !== undefined) {
           headerBalance.textContent = formatRupiah(json.data.totalBalance);
         }
       } catch (e) {
-        headerBalance.textContent = 'Rp 0';
+        // Keep current displayed balance on network error
       }
     }
 
@@ -777,10 +777,10 @@
       // Initial sync with cloud & transactions history
       syncTransactions(true);
 
-      // Auto poll every 3 seconds to keep WhatsApp & Web chats 100% in sync
+      // Auto poll every 10 seconds to keep WhatsApp & Web chats in sync
       setInterval(() => {
         syncTransactions(false);
-      }, 3000);
+      }, 10000);
 
       window.addEventListener('focus', () => {
         syncTransactions(false);

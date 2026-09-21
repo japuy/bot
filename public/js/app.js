@@ -120,7 +120,7 @@ async function loadSummary() {
   try {
     const res = await fetch('/api/summary');
     const json = await res.json();
-    if (json.success) {
+    if (json.success && json.data) {
       currentSummary = json.data;
       renderKPIs(json.data);
       renderCharts(json.data);
@@ -1057,5 +1057,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   setInterval(() => {
     loadSummary();
     loadTransactions();
-  }, 4000);
+  }, 12000);
 });

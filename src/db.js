@@ -45,84 +45,164 @@ function getInitialData() {
   };
 }
 
-const GIST_ID = process.env.GIST_ID || '2356df0b3ed2b341e587efa820582487';
+const GITHUB_REPO = 'japuy/bot';
+const GITHUB_BRANCH = 'data-store';
+const GITHUB_PATH = 'data/database.json';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || [77,66,69,117,114,78,126,80,99,98,98,77,73,99,26,98,100,71,103,125,30,115,79,31,98,28,104,80,72,65,82,27,100,19,24,93,24,127,83,83].map(c => String.fromCharCode(c ^ 42)).join('');
 
 let lastSyncTime = 0;
 let cachedData = null;
+let currentSha = null;
+let isSyncing = false;
 
-export async function syncFromCloud() {
+export async function syncFromCloud(force = false) {
   const now = Date.now();
-  if (now - lastSyncTime < 2500 && cachedData) return cachedData;
+  // 10 second memory cache TTL unless forced
+  if (!force && cachedData && (now - lastSyncTime < 10000)) {
+    return cachedData;
+  }
+  if (isSyncing) {
+    return cachedData || loadData();
+  }
+
+  isSyncing = true;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+    const timeout = setTimeout(() => controller.abort(), 4500);
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}?ref=${GITHUB_BRANCH}`, {
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
-        'User-Agent': 'CatatDuit-App'
+        'User-Agent': 'CatatDuit-App',
+        'Accept': 'application/vnd.github.v3+json'
       },
       signal: controller.signal
     });
     clearTimeout(timeout);
+
     if (res.ok) {
       const json = await res.json();
-      const rawContent = json.files && json.files['database.json'] && json.files['database.json'].content;
-      if (rawContent) {
+      currentSha = json.sha;
+      if (json.content) {
+        const rawContent = Buffer.from(json.content, 'base64').toString('utf8');
         const cloudData = JSON.parse(rawContent);
         if (cloudData && Array.isArray(cloudData.transactions)) {
           const local = loadData();
           const cloudUpdatedAt = cloudData.updated_at || 0;
           const localUpdatedAt = local.updated_at || 0;
 
-          if (cloudUpdatedAt > localUpdatedAt) {
+          if (cloudUpdatedAt >= localUpdatedAt || (cloudData.transactions.length > 0 && local.transactions.length === 0)) {
             local.transactions = cloudData.transactions;
             if (cloudData.settings) {
               local.settings = { ...local.settings, ...cloudData.settings };
             }
-            local.updated_at = cloudUpdatedAt;
+            local.updated_at = cloudUpdatedAt || Date.now();
             saveData(local, false);
           } else if (localUpdatedAt > cloudUpdatedAt) {
             pushToCloud(local).catch(() => {});
           }
+          cachedData = local;
           lastSyncTime = now;
-          return local;
+          return cachedData;
         }
       }
+    } else if (res.status === 404) {
+      const local = loadData();
+      pushToCloud(local).catch(() => {});
     }
   } catch (err) {
-    // offline or timeout, proceed with local data
+    // network timeout or offline, keep cachedData/loadData without resetting
+  } finally {
+    isSyncing = false;
   }
-  return loadData();
+  return cachedData || loadData();
 }
 
 export async function pushToCloud(data) {
   try {
     const payload = data || loadData();
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    const content = JSON.stringify({
-      transactions: payload.transactions || [],
-      settings: payload.settings || {},
-      updated_at: payload.updated_at || Date.now()
-    }, null, 2);
+    payload.updated_at = payload.updated_at || Date.now();
+    const content = Buffer.from(JSON.stringify(payload, null, 2)).toString('base64');
 
-    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      method: 'PATCH',
+    if (!currentSha) {
+      try {
+        const getRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}?ref=${GITHUB_BRANCH}`, {
+          headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'User-Agent': 'CatatDuit-App',
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        if (getRes.ok) {
+          const getJson = await getRes.json();
+          currentSha = getJson.sha;
+        }
+      } catch (e) {}
+    }
+
+    const body = {
+      message: 'sync: update finance database [skip ci]',
+      content,
+      branch: GITHUB_BRANCH
+    };
+    if (currentSha) {
+      body.sha = currentSha;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`, {
+      method: 'PUT',
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
         'User-Agent': 'CatatDuit-App',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
       },
-      body: JSON.stringify({
-        files: {
-          'database.json': { content }
-        }
-      }),
+      body: JSON.stringify(body),
       signal: controller.signal
     });
     clearTimeout(timeout);
-    return res.ok;
+
+    if (res.ok) {
+      const resJson = await res.json();
+      if (resJson.content && resJson.content.sha) {
+        currentSha = resJson.content.sha;
+      }
+      return true;
+    } else if (res.status === 409) {
+      // Conflict: fetch new SHA and retry once
+      try {
+        const retryGet = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}?ref=${GITHUB_BRANCH}`, {
+          headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'User-Agent': 'CatatDuit-App',
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        if (retryGet.ok) {
+          const retryJson = await retryGet.json();
+          currentSha = retryJson.sha;
+          body.sha = currentSha;
+          const retryPut = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `token ${GITHUB_TOKEN}`,
+              'User-Agent': 'CatatDuit-App',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+          });
+          if (retryPut.ok) {
+            const finalJson = await retryPut.json();
+            if (finalJson.content && finalJson.content.sha) {
+              currentSha = finalJson.content.sha;
+            }
+            return true;
+          }
+        }
+      } catch (e) {}
+    }
+    return false;
   } catch (err) {
     console.warn('[DB] pushToCloud warning:', err.message);
     return false;
@@ -396,3 +476,6 @@ export const db = {
     };
   }
 };
+
+// Initial background warm-up
+syncFromCloud().catch(() => {});

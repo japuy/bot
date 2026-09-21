@@ -10,14 +10,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Ensure latest synchronized data from cloud across all serverless containers
-app.use(async (req, res, next) => {
-  try {
-    await db.syncFromCloud();
-  } catch (e) {}
-  next();
-});
-
 // SSE placeholder for Vercel (serverless doesn't support long-running SSE)
 router.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
@@ -28,8 +20,9 @@ router.get('/events', (req, res) => {
 });
 
 // Summary & KPI analytics
-router.get('/summary', (req, res) => {
+router.get('/summary', async (req, res) => {
   try {
+    await db.syncFromCloud();
     const { month, year } = req.query;
     const summary = db.getSummary(month, year);
     res.json({ success: true, data: summary });
@@ -39,8 +32,9 @@ router.get('/summary', (req, res) => {
 });
 
 // Transactions list
-router.get('/transactions', (req, res) => {
+router.get('/transactions', async (req, res) => {
   try {
+    await db.syncFromCloud();
     const { type, category, search, startDate, endDate, limit, offset } = req.query;
     const result = db.getTransactions({ type, category, search, startDate, endDate, limit, offset });
     res.json({ success: true, ...result });
@@ -52,6 +46,7 @@ router.get('/transactions', (req, res) => {
 // Manual transaction creation
 router.post('/transactions', async (req, res) => {
   try {
+    await db.syncFromCloud();
     const { type, amount, description, category, created_at } = req.body;
     if (!amount || isNaN(amount)) {
       return res.status(400).json({ success: false, error: 'Nominal tidak valid.' });
@@ -114,17 +109,20 @@ router.post('/transactions/clear-all', async (req, res) => {
 });
 
 // Categories & Settings
-router.get('/categories', (req, res) => {
+router.get('/categories', async (req, res) => {
+  await db.syncFromCloud();
   res.json({ success: true, data: db.getCategories() });
 });
 
-router.get('/settings', (req, res) => {
+router.get('/settings', async (req, res) => {
+  await db.syncFromCloud();
   res.json({ success: true, data: db.getSettings() });
 });
 
-router.put('/settings', (req, res) => {
+router.put('/settings', async (req, res) => {
   try {
     const updated = db.updateSettings(req.body);
+    await db.pushToCloud(db.getRawData());
     res.json({ success: true, data: updated });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -139,6 +137,7 @@ router.post('/simulate-chat', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Pesan tidak boleh kosong.' });
     }
 
+    await db.syncFromCloud();
     const result = processWhatsAppMessage(message.trim());
     await db.pushToCloud(db.getRawData());
     res.json({ success: true, ...result, summary: db.getSummary() });
@@ -258,6 +257,7 @@ router.post('/webhook/whatsapp', async (req, res) => {
     }
 
     console.log(`[Webhook Incoming] from ${sender}: "${message}"`);
+    await db.syncFromCloud();
     const result = processWhatsAppMessage(message.trim());
     await db.pushToCloud(db.getRawData());
 
