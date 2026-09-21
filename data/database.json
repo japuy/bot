@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1789989044956_4t04vc",
+      "type": "income",
+      "amount": 120000,
+      "description": "Lisa",
+      "category": "Pembayaran Internet",
+      "raw_message": "Lisa 120",
+      "source": "whatsapp",
+      "created_at": "2026-09-21T11:10:44.956Z"
+    },
+    {
       "id": "tx_1789988702080_xtdlu6",
       "type": "expense",
       "amount": 120,
@@ -255,5 +265,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789989054099
+  "updated_at": 1789989054094
 }
