@@ -218,7 +218,18 @@
       "keywords": []
     }
   ],
-  "transactions": [],
+  "transactions": [
+    {
+      "id": "tx_1789992600031_8oak0j",
+      "type": "income",
+      "amount": 602000,
+      "description": "Masuk",
+      "category": "Pembayaran Internet",
+      "raw_message": "Masuk 602",
+      "source": "whatsapp",
+      "created_at": "2026-09-21T12:10:00.031Z"
+    }
+  ],
   "settings": {
     "currency": "IDR",
     "monthly_budget": 3000000,
@@ -227,5 +238,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789992575757
+  "updated_at": 1789992600031
 }
