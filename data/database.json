@@ -220,14 +220,14 @@
   ],
   "transactions": [
     {
-      "id": "tx_1789989148927_38gs0w",
+      "id": "tx_1789989150607_1qc3he",
       "type": "expense",
-      "amount": 150000,
-      "description": "Romi",
+      "amount": 100000,
+      "description": "Budi",
       "category": "Lain-lain",
-      "raw_message": "romi 150rb",
+      "raw_message": "budi 100k",
       "source": "whatsapp",
-      "created_at": "2026-09-21T11:12:28.927Z"
+      "created_at": "2026-09-21T11:12:30.607Z"
     },
     {
       "id": "tx_1789989044956_4t04vc",
@@ -258,5 +258,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789989148927
+  "updated_at": 1789989150607
 }
