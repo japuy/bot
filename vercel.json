@@ -1,6 +1,12 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "data-store": false
+    }
+  },
   "rewrites": [
     {
       "source": "/chat",
