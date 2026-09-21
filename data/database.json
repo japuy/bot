@@ -218,25 +218,7 @@
       "keywords": []
     }
   ],
-  "transactions": [
-    {
-      "id": "tx_1789987693156_0tcv9e",
-      "type": "income",
-      "amount": 100000,
-      "description": "Gaji harian",
-      "category": "Gaji & Upah",
-      "raw_message": "",
-      "source": "web",
-      "created_at": "2026-09-21T10:48:13.156Z"
-    },
-    {
-      "id": "tx_test_1789987586681",
-      "amount": 2000,
-      "description": "Beli kecap",
-      "category": "Belanja Kebutuhan",
-      "created_at": "2026-09-21T10:46:26.681Z"
-    }
-  ],
+  "transactions": [],
   "settings": {
     "currency": "IDR",
     "monthly_budget": 3000000,
@@ -245,5 +227,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789987706231
+  "updated_at": 1789987841514
 }
