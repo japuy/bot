@@ -15,10 +15,11 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 const DEFAULT_CATEGORIES = [
+  { id: 'cat_internet', name: 'Pembayaran Internet', icon: 'wifi', color: '#0ea5e9', keywords: ['internet', 'wifi', 'wifian', 'voucher', 'iuran', 'tagihan internet', 'bayar internet', 'bayar wifi', 'langganan'] },
   { id: 'cat_makanan', name: 'Makanan & Minuman', icon: 'utensils', color: '#f59e0b', keywords: ['makan', 'minum', 'baso', 'bakso', 'mie', 'nasi', 'ayam', 'kopi', 'ngopi', 'jajan', 'snack', 'roti', 'es', 'teh', 'boba', 'mcd', 'kfc', 'cafe', 'sarapan', 'lunch', 'dinner'] },
   { id: 'cat_transport', name: 'Transportasi', icon: 'car', color: '#3b82f6', keywords: ['bensin', 'pertalite', 'pertamax', 'solar', 'grab', 'gojek', 'ojol', 'gocar', 'goride', 'parkir', 'tol', 'kereta', 'krl', 'mrt', 'busway', 'angkot', 'tambal ban', 'cuci motor', 'cuci mobil', 'servis'] },
   { id: 'cat_belanja', name: 'Belanja Kebutuhan', icon: 'shopping-bag', color: '#ec4899', keywords: ['belanja', 'indomaret', 'alfamart', 'supermarket', 'shopee', 'tokopedia', 'lazada', 'tiktok', 'sabun', 'shampoo', 'odol', 'minyak', 'beras', 'telur', 'baju', 'kaos', 'celana', 'sepatu', 'beli'] },
-  { id: 'cat_tagihan', name: 'Tagihan & Utilitas', icon: 'file-text', color: '#ef4444', keywords: ['listrik', 'pln', 'token', 'air', 'pdam', 'wifi', 'indihome', 'biznet', 'pulsa', 'kuota', 'paket data', 'bpjs', 'sewa', 'kos', 'kontrakan', 'cicilan', 'iuran', 'pbb'] },
+  { id: 'cat_tagihan', name: 'Tagihan & Utilitas', icon: 'file-text', color: '#ef4444', keywords: ['listrik', 'pln', 'token', 'air', 'pdam', 'indihome', 'biznet', 'pulsa', 'kuota', 'paket data', 'bpjs', 'sewa', 'kos', 'kontrakan', 'cicilan', 'pbb'] },
   { id: 'cat_hiburan', name: 'Hiburan & Liburan', icon: 'film', color: '#8b5cf6', keywords: ['bioskop', 'nonton', 'game', 'steam', 'netflix', 'spotify', 'jalan-jalan', 'liburan', 'hotel', 'wisata', 'karaoke'] },
   { id: 'cat_kesehatan', name: 'Kesehatan & Obat', icon: 'heart-pulse', color: '#10b981', keywords: ['obat', 'apotek', 'dokter', 'klinik', 'rumah sakit', 'vitamin', 'masker', 'periksa'] },
   { id: 'cat_pendidikan', name: 'Pendidikan & Buku', icon: 'book-open', color: '#06b6d4', keywords: ['buku', 'kursus', 'kuliah', 'sekolah', 'spp', 'alat tulis', 'fotokopi', 'seminar'] },
@@ -222,6 +223,8 @@ function loadData() {
     cachedData = JSON.parse(raw);
     if (!cachedData.categories || cachedData.categories.length === 0) {
       cachedData.categories = DEFAULT_CATEGORIES;
+    } else if (!cachedData.categories.some(c => c.id === 'cat_internet')) {
+      cachedData.categories.unshift(DEFAULT_CATEGORIES[0]);
     }
     return cachedData;
   } catch (err) {

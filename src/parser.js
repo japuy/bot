@@ -78,8 +78,9 @@ export function parseAmount(text) {
  * Detects whether the transaction is an income or expense
  */
 export function detectType(text) {
-  const lower = text.toLowerCase();
+  const lower = text.toLowerCase().trim();
 
+  // 1. Explicit income keywords
   const incomeKeywords = [
     'gaji', 'salary', 'payroll', 'uang bulanan',
     'masuk', 'pemasukan', 'dapat', 'terima', 'diterima',
@@ -88,18 +89,85 @@ export function detectType(text) {
     'bonus', 'cashback', 'hadiah', 'thr', 'angpao', 'infaq masuk'
   ];
 
-  const expenseKeywords = [
-    'beli', 'bayar', 'keluar', 'pengeluaran', 'jajan', 'makan', 'minum',
-    'ongkir', 'checkout', 'bensin', 'tagihan', 'tf ke', 'transfer ke',
-    'kirim ke', 'nonton', 'ngopi', 'sewa', 'cicilan', 'sedekah', 'infak'
-  ];
-
   for (const kw of incomeKeywords) {
     if (lower.includes(kw)) return 'income';
   }
 
-  for (const kw of expenseKeywords) {
+  // 2. Explicit internet / customer payment keywords
+  if (
+    lower.includes('bayar internet') ||
+    lower.includes('bayar wifi') ||
+    lower.includes('iuran internet') ||
+    lower.includes('iuran wifi') ||
+    lower.includes('tagihan internet') ||
+    lower.includes('voucher wifi') ||
+    lower.includes('wifian')
+  ) {
+    return 'income';
+  }
+
+  // 3. Explicit personal utilities (these are personal expenses)
+  const personalUtilityKeywords = [
+    'listrik', 'pln', 'token', 'pdam', 'air', 'bpjs', 'sewa kos', 'kontrakan',
+    'cicilan', 'utang', 'hutang', 'pulsa', 'indihome', 'biznet', 'pbb'
+  ];
+  for (const util of personalUtilityKeywords) {
+    if (lower.includes(util)) return 'expense';
+  }
+
+  // 4. Explicit expense verbs and actions
+  const explicitExpenseKeywords = [
+    'beli', 'jajan', 'keluar', 'pengeluaran',
+    'ongkir', 'checkout', 'bensin', 'nonton', 'ngopi',
+    'sedekah', 'infak', 'tf ke', 'transfer ke', 'kirim ke'
+  ];
+
+  for (const kw of explicitExpenseKeywords) {
     if (lower.includes(kw)) return 'expense';
+  }
+
+  // 5. Pattern: Name + Nominal (Customer paying internet to user)
+  // e.g. "romi 150rb", "budi 100k", "pak slamet 150rb", "romi 150.000", "romi bayar 150rb"
+  const amountObj = parseAmount(text);
+  if (amountObj) {
+    let remainder = lower.replace(amountObj.rawMatch.toLowerCase(), '').trim();
+    // Strip common connectors/words around customer payments
+    remainder = remainder.replace(/\b(bayar|lunas|iuran|tagihan|bulan\s*\w+|bln\s*\w+)\b/g, '').trim();
+
+    // Known expense items (if remainder mentions these, it's an expense like "kopi 15k", "baso 15rb", "bensin 30rb")
+    const knownExpenseItems = [
+      // Makanan & Minuman
+      'makan', 'minum', 'baso', 'bakso', 'maso', 'mie', 'nasi', 'ayam', 'kopi', 'ngopi',
+      'snack', 'roti', 'es', 'teh', 'boba', 'mcd', 'kfc', 'cafe', 'sarapan', 'lunch',
+      'dinner', 'sate', 'soto', 'pecel', 'gorengan', 'martabak', 'rokok', 'cemilan',
+      'jus', 'cilok', 'seblak', 'goreng', 'batagor', 'siomay', 'padang', 'warteg',
+      // Transportasi
+      'bensin', 'pertalite', 'pertamax', 'solar', 'grab', 'gojek', 'ojol', 'gocar',
+      'goride', 'parkir', 'tol', 'kereta', 'krl', 'mrt', 'busway', 'angkot',
+      'tambal ban', 'cuci motor', 'cuci mobil', 'servis', 'oli',
+      // Belanja
+      'belanja', 'indomaret', 'alfamart', 'supermarket', 'shopee', 'tokopedia',
+      'lazada', 'tiktok', 'sabun', 'shampoo', 'odol', 'minyak', 'beras', 'telur',
+      'baju', 'kaos', 'celana', 'sepatu', 'sendal', 'baterai', 'gas', 'galon', 'aqua',
+      // Hiburan / Kesehatan
+      'bioskop', 'game', 'steam', 'netflix', 'spotify', 'karaoke', 'obat', 'apotek',
+      'dokter', 'klinik', 'vitamin', 'masker', 'buku', 'fotokopi'
+    ];
+
+    const hasExpenseItem = knownExpenseItems.some(item => {
+      const re = new RegExp(`\\b${item}\\b`, 'i');
+      return re.test(remainder);
+    });
+
+    if (!hasExpenseItem && remainder.length >= 2) {
+      // It's a client/person's name paying internet to user!
+      return 'income';
+    }
+  }
+
+  // 6. Generic fallback: if it has "bayar", treat as expense
+  if (lower.includes('bayar')) {
+    return 'expense';
   }
 
   // Default to expense because daily logs are mostly expenses
@@ -118,6 +186,26 @@ export function detectCategory(text, type = 'expense') {
     return 'Makanan & Minuman';
   }
 
+  if (type === 'income') {
+    // 1. Check if it's Gaji
+    if (lower.includes('gaji') || lower.includes('salary') || lower.includes('payroll') || lower.includes('upah')) {
+      return 'Gaji & Upah';
+    }
+
+    // 2. Check if it's general business / sales
+    if (lower.includes('omset') || lower.includes('penjualan') || lower.includes('laku') || lower.includes('untung')) {
+      return 'Bisnis & Penjualan';
+    }
+
+    // 3. Check if it's transfer / gift
+    if (lower.includes('transfer') || lower.includes('tf') || lower.includes('hadiah') || lower.includes('thr') || lower.includes('bonus') || lower.includes('cashback')) {
+      return 'Transfer & Hadiah';
+    }
+
+    // 4. Default for customer name payment (e.g. "romi 150rb", "pak ahmad 100k") or internet/wifi
+    return 'Pembayaran Internet';
+  }
+
   for (const cat of categories) {
     if (cat.keywords && cat.keywords.length > 0) {
       for (const kw of cat.keywords) {
@@ -128,10 +216,6 @@ export function detectCategory(text, type = 'expense') {
         }
       }
     }
-  }
-
-  if (type === 'income') {
-    return 'Gaji & Upah';
   }
 
   return 'Lain-lain';
@@ -242,6 +326,8 @@ export function processWhatsAppMessage(messageText) {
       `• "bayar listrik 150k"\n` +
       `• "jajan es kopi 22rb"\n\n` +
       `💰 *Catat Pemasukan*:\n` +
+      `• "romi 150rb" (Bayar internet/pelanggan)\n` +
+      `• "pak slamet 150k"\n` +
       `• "gaji bulanan 5jt"\n` +
       `• "dapat transfer 250rb"\n` +
       `• "omset jualan 750k"\n\n` +
@@ -271,10 +357,16 @@ export function processWhatsAppMessage(messageText) {
   const category = detectCategory(trimmed, type);
   const description = cleanDescription(trimmed, amountObj.rawMatch);
 
+  // If customer internet payment with shorthand amount (e.g. "Lisa 120" -> 120.000, "Romi 150" -> 150.000)
+  let finalAmount = amountObj.amount;
+  if (type === 'income' && category === 'Pembayaran Internet' && finalAmount >= 10 && finalAmount < 1000) {
+    finalAmount *= 1000;
+  }
+
   // Save to DB
   const newTx = db.addTransaction({
     type,
-    amount: amountObj.amount,
+    amount: finalAmount,
     description,
     category,
     raw_message: trimmed,
