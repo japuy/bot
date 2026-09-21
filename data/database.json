@@ -220,6 +220,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1789987889679_kua7gb",
+      "type": "income",
+      "amount": 100000,
+      "description": "Gaji",
+      "category": "Gaji & Upah",
+      "raw_message": "Gaji 100000",
+      "source": "whatsapp",
+      "created_at": "2026-09-21T10:51:29.679Z"
+    },
+    {
       "id": "tx_1789987869232_2kz28c",
       "type": "expense",
       "amount": 25000,
@@ -238,5 +248,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789987869232
+  "updated_at": 1789987889679
 }
