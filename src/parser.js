@@ -291,7 +291,7 @@ export function processWhatsAppMessage(messageText) {
     `💵 *Nominal*: ${formatRupiah(newTx.amount)}\n` +
     `📝 *Ket*: ${newTx.description}\n` +
     `📁 *Kategori*: ${newTx.category}\n` +
-    `🕒 *Waktu*: ${new Date(newTx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}\n` +
+    `🕒 *Waktu*: ${new Date(newTx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })} WIB\n` +
     `━━━━━━━━━━━━━━━━━━━\n` +
     `💳 *Saldo Terkini*: *${formatRupiah(summary.totalBalance)}*\n` +
     `_Ketik 'batal' jika ingin menghapus._`;

@@ -574,9 +574,8 @@
     const renderedTxIds = new Set();
 
     function formatTime(isoString) {
-      if (!isoString) return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-      const d = new Date(isoString);
-      return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const d = isoString ? new Date(isoString) : new Date();
+      return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
     }
 
     function appendTransactionBubbles(tx, shouldPlayChime = false) {
@@ -642,7 +641,7 @@
       const bubble = document.createElement('div');
       bubble.className = `bubble ${isBot ? 'bot-bubble' : 'user-bubble'}`;
 
-      const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
       const formatted = text
         .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
         .replace(/_(.*?)_/g, '<em>$1</em>')
@@ -771,7 +770,7 @@
     // Init
     document.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
-      const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
       const wt = document.getElementById('welcomeTime');
       if (wt) wt.textContent = now;
 

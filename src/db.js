@@ -293,8 +293,19 @@ export const db = {
   getSummary(targetMonth = null, targetYear = null) {
     const data = loadData();
     const now = new Date();
-    const month = targetMonth !== null ? Number(targetMonth) : now.getMonth();
-    const year = targetYear !== null ? Number(targetYear) : now.getFullYear();
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+
+    const jakartaDateParts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
+    }).formatToParts(now);
+    const jYear = Number(jakartaDateParts.find(p => p.type === 'year').value);
+    const jMonth = Number(jakartaDateParts.find(p => p.type === 'month').value) - 1;
+
+    const month = targetMonth !== null ? Number(targetMonth) : jMonth;
+    const year = targetYear !== null ? Number(targetYear) : jYear;
 
     let totalBalance = 0;
     let monthIncome = 0;
@@ -302,7 +313,6 @@ export const db = {
     let todayExpense = 0;
     let todayIncome = 0;
 
-    const todayStr = now.toISOString().slice(0, 10);
     const categoryTotals = {};
 
     // Grouping for charts (days in month)
@@ -311,16 +321,27 @@ export const db = {
     const dailyIncomes = new Array(daysInMonth).fill(0);
 
     for (const tx of data.transactions) {
-      const txDate = new Date(tx.created_at);
-      const isThisYear = txDate.getFullYear() === year;
-      const isThisMonth = isThisYear && txDate.getMonth() === month;
-      const isToday = tx.created_at.slice(0, 10) === todayStr;
+      const txD = new Date(tx.created_at);
+      const txParts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Jakarta',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+      }).formatToParts(txD);
+      const txYear = Number(txParts.find(p => p.type === 'year').value);
+      const txMonth = Number(txParts.find(p => p.type === 'month').value) - 1;
+      const txDay = Number(txParts.find(p => p.type === 'day').value);
+      const txDateStr = txD.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+
+      const isThisYear = txYear === year;
+      const isThisMonth = isThisYear && txMonth === month;
+      const isToday = txDateStr === todayStr;
 
       if (tx.type === 'income') {
         totalBalance += tx.amount;
         if (isThisMonth) {
           monthIncome += tx.amount;
-          const dayIdx = txDate.getDate() - 1;
+          const dayIdx = txDay - 1;
           if (dayIdx >= 0 && dayIdx < daysInMonth) {
             dailyIncomes[dayIdx] += tx.amount;
           }
@@ -333,7 +354,7 @@ export const db = {
         if (isThisMonth) {
           monthExpense += tx.amount;
           categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
-          const dayIdx = txDate.getDate() - 1;
+          const dayIdx = txDay - 1;
           if (dayIdx >= 0 && dayIdx < daysInMonth) {
             dailyExpenses[dayIdx] += tx.amount;
           }
