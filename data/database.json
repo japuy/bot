@@ -220,6 +220,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1789992657023_jpkc1g",
+      "type": "income",
+      "amount": 120000,
+      "description": "Virda",
+      "category": "Pembayaran Internet",
+      "raw_message": "Virda 120",
+      "source": "whatsapp",
+      "created_at": "2026-09-21T12:10:57.023Z"
+    },
+    {
       "id": "tx_1789992600031_8oak0j",
       "type": "income",
       "amount": 602000,
@@ -238,5 +248,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1789992623792
+  "updated_at": 1789992657023
 }
