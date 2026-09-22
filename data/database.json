@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1790057955817_srmm7v",
+      "type": "income",
+      "amount": 12000,
+      "description": "Jajan pas mouza ngaji",
+      "category": "Gaji & Upah",
+      "raw_message": "Jajan pas mouza ngaji 12rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-22T06:19:15.817Z"
+    },
+    {
       "id": "tx_1790043738278_pr2d2j",
       "type": "income",
       "amount": 100000,
@@ -335,5 +345,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790043738278
+  "updated_at": 1790057955817
 }
