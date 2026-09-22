@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1790043738278_pr2d2j",
+      "type": "income",
+      "amount": 100000,
+      "description": "Pemasukan",
+      "category": "Pembayaran Internet",
+      "raw_message": "Pemasukan 100rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-22T02:22:18.278Z"
+    },
+    {
       "id": "tx_1790043724686_9gfslp",
       "type": "expense",
       "amount": 15000,
@@ -325,5 +335,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790043724686
+  "updated_at": 1790043738278
 }
