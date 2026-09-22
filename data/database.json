@@ -1,6 +1,23 @@
 {
   "categories": [
     {
+      "id": "cat_internet",
+      "name": "Pembayaran Internet",
+      "icon": "wifi",
+      "color": "#0ea5e9",
+      "keywords": [
+        "internet",
+        "wifi",
+        "wifian",
+        "voucher",
+        "iuran",
+        "tagihan internet",
+        "bayar internet",
+        "bayar wifi",
+        "langganan"
+      ]
+    },
+    {
       "id": "cat_makanan",
       "name": "Makanan & Minuman",
       "icon": "utensils",
@@ -218,18 +235,7 @@
       "keywords": []
     }
   ],
-  "transactions": [
-    {
-      "id": "tx_1790009263251_lo1lik",
-      "type": "income",
-      "amount": 150000,
-      "description": "Firda",
-      "category": "Pembayaran Internet",
-      "raw_message": "Firda 150",
-      "source": "whatsapp",
-      "created_at": "2026-09-21T16:47:43.251Z"
-    }
-  ],
+  "transactions": [],
   "settings": {
     "currency": "IDR",
     "monthly_budget": 3000000,
@@ -238,5 +244,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790009263252
+  "updated_at": 1790041861305
 }
