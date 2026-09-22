@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1790063388500_ikgohs",
+      "type": "income",
+      "amount": 27000,
+      "description": "Bayar paket",
+      "category": "Pembayaran Internet",
+      "raw_message": "Bayar paket 27rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-22T07:49:48.500Z"
+    },
+    {
       "id": "tx_1790061129009_nrld9d",
       "type": "expense",
       "amount": 10000,
@@ -365,5 +375,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790061129009
+  "updated_at": 1790063388500
 }
