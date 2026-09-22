@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1790043694502_y43s4q",
+      "type": "expense",
+      "amount": 28000,
+      "description": "Beli sarapan",
+      "category": "Makanan & Minuman",
+      "raw_message": "Beli sarapan 28rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-22T02:21:34.502Z"
+    },
+    {
       "id": "tx_1790043681974_nrh8st",
       "type": "expense",
       "amount": 25000,
@@ -305,5 +315,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790043681974
+  "updated_at": 1790043694503
 }
