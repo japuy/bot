@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1790063723287_10nxzv",
+      "type": "expense",
+      "amount": 12000,
+      "description": "Pengeluaran",
+      "category": "Lain-lain",
+      "raw_message": "Pengeluaran 12rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-22T07:55:23.287Z"
+    },
+    {
       "id": "tx_1790063713248_inino1",
       "type": "expense",
       "amount": 27000,
@@ -405,5 +415,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790063713248
+  "updated_at": 1790063723288
 }
