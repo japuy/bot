@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1790063430943_lsw145",
+      "type": "income",
+      "amount": 27000,
+      "description": "Paket",
+      "category": "Pembayaran Internet",
+      "raw_message": "Paket 27rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-22T07:50:30.943Z"
+    },
+    {
       "id": "tx_1790063388500_ikgohs",
       "type": "income",
       "amount": 27000,
@@ -375,5 +385,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790063388500
+  "updated_at": 1790063430943
 }
