@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1790043637279_ph3aon",
+      "type": "expense",
+      "amount": 59000,
+      "description": "Belanja",
+      "category": "Belanja Kebutuhan",
+      "raw_message": "Belanja 59rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-22T02:20:37.279Z"
+    },
+    {
       "id": "tx_1790043610805_o6qvqo",
       "type": "expense",
       "amount": 30000,
@@ -285,5 +295,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790043610805
+  "updated_at": 1790043637279
 }
