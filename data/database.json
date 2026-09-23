@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1790125430763_9xvrl6",
+      "type": "income",
+      "amount": 50000,
+      "description": "Pengeluaran ngaji",
+      "category": "Gaji & Upah",
+      "raw_message": "Pengeluaran ngaji 50rb",
+      "source": "whatsapp",
+      "created_at": "2026-09-23T01:03:50.763Z"
+    },
+    {
       "id": "tx_1790125387591_ugipzf",
       "type": "expense",
       "amount": 13000,
@@ -445,5 +455,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790125387592
+  "updated_at": 1790125430764
 }
