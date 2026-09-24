@@ -237,16 +237,6 @@
   ],
   "transactions": [
     {
-      "id": "tx_1790263284138_hce080",
-      "type": "income",
-      "amount": 150000,
-      "description": "*PENGINGAT PEMBAYARAN INTERNET (H-3)* *ASNET* -------------------------------------------- Halo Bapak/Ibu *test a*, Kami menginformasikan bahwa tagihan internet Anda akan jatuh tempo dalam *3 hari lagi*: No. Invoice : *INV-TEST-001* Layanan : *Paket Internet* Periode : *Periode Berjalan* Total Tagihan : *Rp 150.000* Jatuh Tempo : *20-10-2026* -------------------------------------------- Pembayaran dapat ditransfer melalui: 💳 *BCA*: 1234567890 a.n Arshyilanet 💳 *Mandiri*: 9876543210 a.n Arshyilanet 📱 *QRIS*: Arshyilanet QRIS Mohon lakukan pembayaran sebelum jatuh tempo agar koneksi internet Anda tetap lancar dan terhindar dari isolir otomatis. Jika sudah melakukan pembayaran, silakan abaikan pesan ini. Terima kasih! 🙏",
-      "category": "Bisnis & Penjualan",
-      "raw_message": "*PENGINGAT PEMBAYARAN INTERNET (H-3)*\n*ASNET*\n--------------------------------------------\nHalo Bapak/Ibu *test a*,\n\nKami menginformasikan bahwa tagihan internet Anda akan jatuh tempo dalam *3 hari lagi*:\n\nNo. Invoice   : *INV-TEST-001*\nLayanan       : *Paket Internet*\nPeriode       : *Periode Berjalan*\nTotal Tagihan : *Rp 150.000*\nJatuh Tempo   : *20-10-2026*\n--------------------------------------------\nPembayaran dapat ditransfer melalui:\n💳 *BCA*: 1234567890 a.n Arshyilanet\n💳 *Mandiri*: 9876543210 a.n Arshyilanet\n📱 *QRIS*: Arshyilanet QRIS\n\nMohon lakukan pembayaran sebelum jatuh tempo agar koneksi internet Anda tetap lancar dan terhindar dari isolir otomatis.\n\nJika sudah melakukan pembayaran, silakan abaikan pesan ini. Terima kasih! 🙏",
-      "source": "whatsapp",
-      "created_at": "2026-09-24T15:21:24.138Z"
-    },
-    {
       "id": "tx_1790260821609_pulzls",
       "type": "expense",
       "amount": 77000,
@@ -505,5 +495,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790263284138
+  "updated_at": 1790263797454
 }
