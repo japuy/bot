@@ -237,6 +237,16 @@
   ],
   "transactions": [
     {
+      "id": "tx_1790266123180_437g1i",
+      "type": "income",
+      "amount": 150000,
+      "description": "*KWITANSI PEMBAYARAN RESMI* -------------------------------------------- No. Kuitansi : *INV-202609-001* Tanggal : *2026-09-24 16:08:41 WIB* ID Pelanggan : *CUST-1001* Nama : *test a* Layanan : *paket bronze* Periode : *September 2026* Masa Aktif : *s/d Tgl 24 Oktober 2026* Total Bayar : *Rp 150.000* Metode Bayar : *Tunai* Status : *LUNAS (PAID) ✅* -------------------------------------------- Terima kasih atas pembayaran Anda. Layanan internet Anda tetap aktif dan dapat dinikmati dengan lancar. Butuh bantuan? Hubungi PIC kami di WhatsApp: 087860004888 _Pesan otomatis Sistem Billing ARSHYILA NET._",
+      "category": "Pembayaran Internet",
+      "raw_message": "*KWITANSI PEMBAYARAN RESMI*\n\n--------------------------------------------\nNo. Kuitansi : *INV-202609-001*\nTanggal      : *2026-09-24 16:08:41 WIB*\nID Pelanggan : *CUST-1001*\nNama         : *test a*\nLayanan      : *paket bronze*\nPeriode      : *September 2026*\nMasa Aktif   : *s/d Tgl 24 Oktober 2026*\nTotal Bayar  : *Rp 150.000*\nMetode Bayar : *Tunai*\nStatus       : *LUNAS (PAID) ✅*\n--------------------------------------------\nTerima kasih atas pembayaran Anda. Layanan internet Anda tetap aktif dan dapat dinikmati dengan lancar.\n\nButuh bantuan? Hubungi PIC kami di WhatsApp: 087860004888\n_Pesan otomatis Sistem Billing ARSHYILA NET._",
+      "source": "whatsapp",
+      "created_at": "2026-09-24T16:08:43.180Z"
+    },
+    {
       "id": "tx_1790260821609_pulzls",
       "type": "expense",
       "amount": 77000,
@@ -495,5 +505,5 @@
     "fonnte_token": "BfMDrng3jS2CkudCyhW9",
     "bot_phone": "089639386199"
   },
-  "updated_at": 1790263797454
+  "updated_at": 1790266123180
 }
